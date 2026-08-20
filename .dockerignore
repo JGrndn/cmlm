@@ -1,0 +1,10 @@
+node_modules
+.next
+.git
+*.env
+*.md
+prisma/migrations/dev*
+src/tests
+coverage
+*.test.ts
+vitest.config.ts

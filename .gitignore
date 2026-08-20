@@ -1,0 +1,16 @@
+/node_modules/
+/.next/
+/src/generated
+/coverage
+
+
+# env files
+.env
+.env*.local
+.env*.example
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# prisma

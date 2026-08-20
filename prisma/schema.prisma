@@ -1,0 +1,52 @@
+generator client {
+  provider        = "prisma-client-js"
+  output          = "../src/generated/prisma"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  CONTRIBUTOR
+  VIEWER
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String?
+  role      Role     @default(VIEWER)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Fiche {
+  id        String   @id @default(cuid())
+  titre     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    String
+  items     Item[]
+
+  @@map("fiches")
+}
+
+model Item {
+  id        String   @id @default(cuid())
+  ficheId   String
+  fiche     Fiche    @relation(fields: [ficheId], references: [id])
+  ordre     Int
+  contenu   Json
+  createdAt DateTime @default(now())
+
+  @@map("items")
+}
