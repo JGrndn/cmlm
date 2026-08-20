@@ -6,7 +6,16 @@ module.exports = {
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
-    extend: {},
+    extend: {
+      keyframes: {
+        'fade-in': { from: { opacity: '0' }, to: { opacity: '1' } },
+        'slide-in': { from: { transform: 'translateX(-100%)' }, to: { transform: 'translateX(0)' } },
+      },
+      animation: {
+        'fade-in': 'fade-in 0.2s ease-out',
+        'slide-in': 'slide-in 0.25s ease-out',
+      },
+    },
   },
-  plugins: [],
+  plugins: [require('tailwindcss-animate')],
 };
