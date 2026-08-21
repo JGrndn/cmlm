@@ -1,12 +1,10 @@
 generator client {
-  provider        = "prisma-client-js"
-  output          = "../src/generated/prisma"
-  previewFeatures = ["driverAdapters"]
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 enum Role {
@@ -17,25 +15,152 @@ enum Role {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
+  id        String     @id @default(cuid())
+  email     String     @unique
   name      String?
   password  String?
-  role      Role     @default(VIEWER)
-  isActive  Boolean  @default(true)
+  role      Role       @default(VIEWER)
+  isActive  Boolean    @default(true)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  classeurs Classeur[]
+
+  @@map("users")
+}
+
+// ─── Données de référence ───────────────────────────────────────────────────
+
+model Cycle {
+  id       String           @id @default(cuid())
+  code     String           @unique // "cycle1" | "cycle2" | "cycle3"
+  label    String
+  niveaux  NiveauScolaire[]
+  domaines Domaine[]
+
+  @@map("cycles")
+}
+
+model NiveauScolaire {
+  id        String     @id @default(cuid())
+  code      String     @unique // PS | MS | GS | CP | CE1 | CE2 | CM1 | CM2
+  label     String
+  ordre     Int
+  cycleId   String
+  cycle     Cycle      @relation(fields: [cycleId], references: [id])
+  classeurs Classeur[]
+
+  @@map("niveaux_scolaires")
+}
+
+model AnneeScolaire {
+  id        String     @id @default(cuid())
+  label     String     @unique // "2025-2026"
+  debut     Int // 2025
+  fin       Int // 2026
+  classeurs Classeur[]
+
+  @@map("annees_scolaires")
+}
+
+model Domaine {
+  id           String        @id @default(cuid())
+  label        String
+  cycleId      String
+  cycle        Cycle         @relation(fields: [cycleId], references: [id])
+  sousDomaines SousDomaine[]
+
+  @@map("domaines")
+}
+
+model SousDomaine {
+  id        String    @id @default(cuid())
+  label     String
+  domaineId String
+  domaine   Domaine   @relation(fields: [domaineId], references: [id])
+  matieres  Matiere[]
+
+  @@map("sous_domaines")
+}
+
+// ─── Contenu utilisateur ────────────────────────────────────────────────────
+
+model Classeur {
+  id              String         @id @default(cuid())
+  titre           String
+  userId          String
+  user            User           @relation(fields: [userId], references: [id])
+  niveauId        String
+  niveau          NiveauScolaire @relation(fields: [niveauId], references: [id])
+  anneeScolaireId String
+  anneeScolaire   AnneeScolaire  @relation(fields: [anneeScolaireId], references: [id])
+  matieres        Matiere[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@map("classeurs")
+}
+
+model Matiere {
+  id           String      @id @default(cuid())
+  titre        String
+  classeurId   String
+  classeur     Classeur    @relation(fields: [classeurId], references: [id], onDelete: Cascade)
+  sousDomainId String?
+  sousDomaine  SousDomaine? @relation(fields: [sousDomainId], references: [id])
+  ordre        Int
+  sequences    Sequence[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@map("matieres")
+}
+
+enum Periode {
+  P1
+  P2
+  P3
+  P4
+  P5
+}
+
+model Sequence {
+  id        String   @id @default(cuid())
+  titre     String
+  matiereId String
+  matiere   Matiere  @relation(fields: [matiereId], references: [id], onDelete: Cascade)
+  periode   Periode?
+  objectifs String?
+  ordre     Int
+  seances   Seance[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@map("users")
+  @@map("sequences")
+}
+
+model Seance {
+  id         String   @id @default(cuid())
+  titre      String
+  sequenceId String
+  sequence   Sequence @relation(fields: [sequenceId], references: [id], onDelete: Cascade)
+  date       DateTime?
+  ordre      Int
+  fiches     Fiche[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("seances")
 }
 
 model Fiche {
   id        String   @id @default(cuid())
   titre     String
+  seanceId  String
+  seance    Seance   @relation(fields: [seanceId], references: [id], onDelete: Cascade)
+  ordre     Int
+  items     Item[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  userId    String
-  items     Item[]
 
   @@map("fiches")
 }
@@ -43,9 +168,10 @@ model Fiche {
 model Item {
   id        String   @id @default(cuid())
   ficheId   String
-  fiche     Fiche    @relation(fields: [ficheId], references: [id])
+  fiche     Fiche    @relation(fields: [ficheId], references: [id], onDelete: Cascade)
   ordre     Int
-  contenu   Json
+  duree     Int? // minutes
+  contenu   Json // TipTap JSON (JSONB PostgreSQL)
   createdAt DateTime @default(now())
 
   @@map("items")

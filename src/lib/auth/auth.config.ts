@@ -9,12 +9,15 @@ export const authConfig: NextAuthConfig = {
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
-      const isOnDashboard = !nextUrl.pathname.startsWith('/auth');
-      if (isOnDashboard) {
-        if (isLoggedIn) return true;
+      const isPublicPath = ['/signin', '/error'].some(
+        (p) => nextUrl.pathname.startsWith(p),
+      );
+
+      if (isLoggedIn && isPublicPath) {
+        return Response.redirect(new URL('/classeurs', nextUrl));
+      }
+      if (!isLoggedIn && !isPublicPath) {
         return false;
-      } else if (isLoggedIn) {
-        return Response.redirect(new URL('/', nextUrl));
       }
       return true;
     },

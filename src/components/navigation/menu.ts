@@ -1,5 +1,5 @@
 import { NavItem } from "@/components/navigation/navigation.types";
-import { FileText, LayoutDashboard, Settings } from "lucide-react";
+import { BookOpen, LayoutDashboard, Settings } from "lucide-react";
 
 export const navItems: NavItem[] = [
   {
@@ -9,10 +9,10 @@ export const navItems: NavItem[] = [
     href: "/",
   },
   {
-    id: "list-fiches",
-    label: "Fiches",
-    icon: FileText,
-    href: "/fiches",
+    id: "classeurs",
+    label: "Mes classeurs",
+    icon: BookOpen,
+    href: "/classeurs",
   },
 ];
 
