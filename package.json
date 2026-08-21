@@ -4,7 +4,7 @@
   "description": "",
   "main": "next.config.js",
   "scripts": {
-    "dev:install": "npm i",
+    "dev:install": "npm i && npm run prisma:generate",
     "dev": "cross-env NEXT_PUBLIC_APP_ENV=development next dev -H 0.0.0.0",
     "dev:test": "cross-env NEXT_PUBLIC_APP_ENV=test next dev -H 0.0.0.0",
     "dev:prod": "cross-env NEXT_PUBLIC_APP_ENV=production next dev -H 0.0.0.0",
