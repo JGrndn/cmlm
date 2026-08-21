@@ -4,9 +4,7 @@ import { useState } from 'react';
 import { trpc } from '@/lib/trpc/client';
 import type { RouterOutputs } from '@/lib/trpc/types';
 import { Plus, Pencil, Trash2, ChevronRight } from 'lucide-react';
-import type { Periode } from '@/generated/prisma';
-
-const PERIODES: Periode[] = ['P1', 'P2', 'P3', 'P4', 'P5'];
+import { SequenceSlideOver } from './SequenceSlideOver';
 
 type Sequence = RouterOutputs['sequence']['list'][0];
 
@@ -19,10 +17,9 @@ export function SequenceList({
   classeurId: string;
   initialSequences: Sequence[];
 }) {
-  const [newTitre, setNewTitre] = useState('');
-  const [newPeriode, setNewPeriode] = useState<Periode | ''>('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitre, setEditTitre] = useState('');
+  const [isSlideOverOpen, setIsSlideOverOpen] = useState(false);
   const utils = trpc.useUtils();
 
   const { data: sequences = initialSequences } = trpc.sequence.list.useQuery(
@@ -30,9 +27,6 @@ export function SequenceList({
     { initialData: initialSequences },
   );
 
-  const createMutation = trpc.sequence.create.useMutation({
-    onSuccess: () => { utils.sequence.list.invalidate(); setNewTitre(''); setNewPeriode(''); },
-  });
   const updateMutation = trpc.sequence.update.useMutation({
     onSuccess: () => { utils.sequence.list.invalidate(); setEditingId(null); },
   });
@@ -78,35 +72,20 @@ export function SequenceList({
         ))}
       </ul>
 
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (newTitre.trim()) createMutation.mutate({ titre: newTitre, matiereId, periode: newPeriode || undefined });
-        }}
-        className="flex gap-2"
-      >
-        <input
-          placeholder="Nouvelle séquence…"
-          className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm"
-          value={newTitre}
-          onChange={(e) => setNewTitre(e.target.value)}
-        />
-        <select
-          className="border border-gray-300 rounded-md px-2 py-2 text-sm"
-          value={newPeriode}
-          onChange={(e) => setNewPeriode(e.target.value as Periode | '')}
-        >
-          <option value="">Période</option>
-          {PERIODES.map((p) => <option key={p} value={p}>{p}</option>)}
-        </select>
+      <div className="flex justify-end">
         <button
-          type="submit"
-          disabled={!newTitre.trim() || createMutation.isPending}
-          className="flex items-center gap-1.5 px-3 py-2 bg-blue-700 text-white text-sm rounded-md hover:bg-blue-800 disabled:opacity-50"
+          onClick={() => setIsSlideOverOpen(true)}
+          className="inline-flex items-center gap-1.5 px-3 py-2 bg-blue-700 text-white text-sm rounded-md hover:bg-blue-800"
         >
-          <Plus className="h-4 w-4" /> Ajouter
+          <Plus className="h-4 w-4" /> Nouvelle séquence
         </button>
-      </form>
+      </div>
+      <SequenceSlideOver
+        matiereId={matiereId}
+        isOpen={isSlideOverOpen}
+        onClose={() => setIsSlideOverOpen(false)}
+        onSuccess={() => utils.sequence.list.invalidate()}
+      />
     </div>
   );
 }

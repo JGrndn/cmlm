@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { trpc } from '@/lib/trpc/client';
 import type { RouterOutputs } from '@/lib/trpc/types';
 import { Plus, Pencil, Trash2, ChevronRight, Clock } from 'lucide-react';
+import { SeanceSlideOver } from './SeanceSlideOver';
 
 type Seance = RouterOutputs['seance']['list'][0];
 
@@ -22,9 +23,9 @@ export function SeanceList({
   classeurId: string;
   initialSeances: Seance[];
 }) {
-  const [newTitre, setNewTitre] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitre, setEditTitre] = useState('');
+  const [isSlideOverOpen, setIsSlideOverOpen] = useState(false);
   const utils = trpc.useUtils();
 
   const { data: seances = initialSeances } = trpc.seance.list.useQuery(
@@ -32,9 +33,6 @@ export function SeanceList({
     { initialData: initialSeances },
   );
 
-  const createMutation = trpc.seance.create.useMutation({
-    onSuccess: () => { utils.seance.list.invalidate(); setNewTitre(''); },
-  });
   const updateMutation = trpc.seance.update.useMutation({
     onSuccess: () => { utils.seance.list.invalidate(); setEditingId(null); },
   });
@@ -91,24 +89,20 @@ export function SeanceList({
         })}
       </ul>
 
-      <form
-        onSubmit={(e) => { e.preventDefault(); if (newTitre.trim()) createMutation.mutate({ titre: newTitre, sequenceId }); }}
-        className="flex gap-2"
-      >
-        <input
-          placeholder="Nouvelle séance…"
-          className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm"
-          value={newTitre}
-          onChange={(e) => setNewTitre(e.target.value)}
-        />
+      <div className="flex justify-end">
         <button
-          type="submit"
-          disabled={!newTitre.trim() || createMutation.isPending}
-          className="flex items-center gap-1.5 px-3 py-2 bg-blue-700 text-white text-sm rounded-md hover:bg-blue-800 disabled:opacity-50"
+          onClick={() => setIsSlideOverOpen(true)}
+          className="inline-flex items-center gap-1.5 px-3 py-2 bg-blue-700 text-white text-sm rounded-md hover:bg-blue-800"
         >
-          <Plus className="h-4 w-4" /> Ajouter
+          <Plus className="h-4 w-4" /> Nouvelle séance
         </button>
-      </form>
+      </div>
+      <SeanceSlideOver
+        sequenceId={sequenceId}
+        isOpen={isSlideOverOpen}
+        onClose={() => setIsSlideOverOpen(false)}
+        onSuccess={() => utils.seance.list.invalidate()}
+      />
     </div>
   );
 }

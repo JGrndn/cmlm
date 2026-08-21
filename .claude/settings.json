@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "additionalDirectories": [
+      "c:\\dev\\private\\cmlm\\src\\lib\\domain\\dto",
+      "c:\\dev\\private\\cmlm\\src\\server\\mappers",
+      "c:\\dev\\private\\cmlm\\src\\server\\services",
+      "c:\\dev\\private\\cmlm\\src\\server\\routers"
+    ]
+  }
+}

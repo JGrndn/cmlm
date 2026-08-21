@@ -2,7 +2,7 @@ import { auth } from '@/lib/auth/auth';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { ClasseurCard } from '@/components/classeurs/ClasseurCard';
-import { ClasseurCreateForm } from '@/components/classeurs/ClasseurCreateForm';
+import { ClasseurCreateButton } from '@/components/classeurs/ClasseurCreateButton';
 
 export default async function ClasseursPage() {
   const session = await auth();
@@ -33,7 +33,7 @@ export default async function ClasseursPage() {
     <main className="p-6 max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Mes classeurs</h1>
-        <ClasseurCreateForm />
+        <ClasseurCreateButton />
       </div>
 
       {Object.keys(grouped).length === 0 ? (
