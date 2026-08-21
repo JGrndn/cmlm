@@ -1,35 +1,91 @@
 import { z } from 'zod';
-import { createTRPCRouter, publicProcedure } from '@/server/trpc';
+import { TRPCError } from '@trpc/server';
+import { Prisma } from '@/generated/prisma';
+import { createTRPCRouter, protectedProcedure } from '@/server/trpc';
+import { prisma as _db } from '@/lib/prisma';
+
+type Db = typeof _db;
+
+async function assertItemOwner(prisma: Db, itemId: string, userId: string) {
+  const item = await prisma.item.findFirst({
+    where: {
+      id: itemId,
+      fiche: { seance: { sequence: { matiere: { classeur: { userId } } } } },
+    },
+  });
+  if (!item) throw new TRPCError({ code: 'NOT_FOUND' });
+  return item;
+}
 
 export const itemRouter = createTRPCRouter({
-  create: publicProcedure
+  create: protectedProcedure
     .input(
       z.object({
         ficheId: z.string(),
-        ordre: z.number().int().min(0),
-        contenu: z.unknown(),
-      })
+        contenu: z.record(z.string(), z.unknown()),
+        duree: z.number().int().min(1).optional(),
+      }),
     )
     .mutation(async ({ ctx, input }) => {
-      return ctx.prisma.item.create({ data: input as any });
+      const fiche = await ctx.prisma.fiche.findFirst({
+        where: {
+          id: input.ficheId,
+          seance: { sequence: { matiere: { classeur: { userId: ctx.session.user.id } } } },
+        },
+      });
+      if (!fiche) throw new TRPCError({ code: 'NOT_FOUND' });
+
+      const count = await ctx.prisma.item.count({ where: { ficheId: input.ficheId } });
+      return ctx.prisma.item.create({
+        data: {
+          ficheId: input.ficheId,
+          contenu: input.contenu as Prisma.InputJsonValue,
+          ordre: count + 1,
+          ...(input.duree !== undefined ? { duree: input.duree } : {}),
+        },
+      });
     }),
 
-  update: publicProcedure
+  update: protectedProcedure
     .input(
       z.object({
         id: z.string(),
-        ordre: z.number().int().min(0).optional(),
-        contenu: z.unknown().optional(),
-      })
+        contenu: z.record(z.string(), z.unknown()).optional(),
+        duree: z.number().int().min(1).nullable().optional(),
+      }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { id, ...data } = input;
-      return ctx.prisma.item.update({ where: { id }, data: data as any });
+      const { id, contenu, ...rest } = input;
+      await assertItemOwner(ctx.prisma, id, ctx.session.user.id);
+      return ctx.prisma.item.update({
+        where: { id },
+        data: {
+          ...rest,
+          ...(contenu !== undefined ? { contenu: contenu as Prisma.InputJsonValue } : {}),
+        },
+      });
     }),
 
-  delete: publicProcedure
+  delete: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
+      await assertItemOwner(ctx.prisma, input.id, ctx.session.user.id);
       return ctx.prisma.item.delete({ where: { id: input.id } });
+    }),
+
+  reorder: protectedProcedure
+    .input(z.object({ ids: z.array(z.string()) }))
+    .mutation(async ({ ctx, input }) => {
+      await Promise.all(
+        input.ids.map((id, ordre) =>
+          ctx.prisma.item.updateMany({
+            where: {
+              id,
+              fiche: { seance: { sequence: { matiere: { classeur: { userId: ctx.session.user.id } } } } },
+            },
+            data: { ordre: ordre + 1 },
+          }),
+        ),
+      );
     }),
 });
