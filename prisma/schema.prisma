@@ -7,13 +7,6 @@ datasource db {
   provider = "postgresql"
 }
 
-enum Role {
-  ADMIN
-  MANAGER
-  CONTRIBUTOR
-  VIEWER
-}
-
 model User {
   id        String     @id @default(cuid())
   email     String     @unique
@@ -28,35 +21,33 @@ model User {
   @@map("users")
 }
 
-// ─── Données de référence ───────────────────────────────────────────────────
-
 model Cycle {
   id       String           @id @default(cuid())
-  code     String           @unique // "cycle1" | "cycle2" | "cycle3"
+  code     String           @unique
   label    String
-  niveaux  NiveauScolaire[]
   domaines Domaine[]
+  niveaux  NiveauScolaire[]
 
   @@map("cycles")
 }
 
 model NiveauScolaire {
   id        String     @id @default(cuid())
-  code      String     @unique // PS | MS | GS | CP | CE1 | CE2 | CM1 | CM2
+  code      String     @unique
   label     String
   ordre     Int
   cycleId   String
-  cycle     Cycle      @relation(fields: [cycleId], references: [id])
   classeurs Classeur[]
+  cycle     Cycle      @relation(fields: [cycleId], references: [id])
 
   @@map("niveaux_scolaires")
 }
 
 model AnneeScolaire {
   id        String     @id @default(cuid())
-  label     String     @unique // "2025-2026"
-  debut     Int // 2025
-  fin       Int // 2026
+  label     String     @unique
+  debut     Int
+  fin       Int
   classeurs Classeur[]
 
   @@map("annees_scolaires")
@@ -76,43 +67,102 @@ model SousDomaine {
   id        String    @id @default(cuid())
   label     String
   domaineId String
-  domaine   Domaine   @relation(fields: [domaineId], references: [id])
   matieres  Matiere[]
+  domaine   Domaine   @relation(fields: [domaineId], references: [id])
 
   @@map("sous_domaines")
 }
-
-// ─── Contenu utilisateur ────────────────────────────────────────────────────
 
 model Classeur {
   id              String         @id @default(cuid())
   titre           String
   userId          String
-  user            User           @relation(fields: [userId], references: [id])
   niveauId        String
-  niveau          NiveauScolaire @relation(fields: [niveauId], references: [id])
   anneeScolaireId String
-  anneeScolaire   AnneeScolaire  @relation(fields: [anneeScolaireId], references: [id])
-  matieres        Matiere[]
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
+  anneeScolaire   AnneeScolaire  @relation(fields: [anneeScolaireId], references: [id])
+  niveau          NiveauScolaire @relation(fields: [niveauId], references: [id])
+  user            User           @relation(fields: [userId], references: [id])
+  matieres        Matiere[]
 
   @@map("classeurs")
 }
 
 model Matiere {
-  id           String      @id @default(cuid())
+  id           String       @id @default(cuid())
   titre        String
   classeurId   String
-  classeur     Classeur    @relation(fields: [classeurId], references: [id], onDelete: Cascade)
   sousDomainId String?
-  sousDomaine  SousDomaine? @relation(fields: [sousDomainId], references: [id])
   ordre        Int
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  classeur     Classeur     @relation(fields: [classeurId], references: [id], onDelete: Cascade)
+  sousDomaine  SousDomaine? @relation(fields: [sousDomainId], references: [id])
   sequences    Sequence[]
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
 
   @@map("matieres")
+}
+
+model Sequence {
+  id        String   @id @default(cuid())
+  titre     String
+  matiereId String
+  periode   Periode?
+  objectifs String?
+  ordre     Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  seances   Seance[]
+  matiere   Matiere  @relation(fields: [matiereId], references: [id], onDelete: Cascade)
+
+  @@map("sequences")
+}
+
+model Seance {
+  id         String    @id @default(cuid())
+  titre      String
+  sequenceId String
+  date       DateTime?
+  ordre      Int
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  fiches     Fiche[]
+  sequence   Sequence  @relation(fields: [sequenceId], references: [id], onDelete: Cascade)
+
+  @@map("seances")
+}
+
+model Fiche {
+  id        String   @id @default(cuid())
+  titre     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ordre     Int
+  seanceId  String
+  seance    Seance   @relation(fields: [seanceId], references: [id], onDelete: Cascade)
+  items     Item[]
+
+  @@map("fiches")
+}
+
+model Item {
+  id        String   @id @default(cuid())
+  ficheId   String
+  ordre     Int
+  contenu   Json
+  createdAt DateTime @default(now())
+  duree     Int?
+  fiche     Fiche    @relation(fields: [ficheId], references: [id], onDelete: Cascade)
+
+  @@map("items")
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  CONTRIBUTOR
+  VIEWER
 }
 
 enum Periode {
@@ -121,58 +171,4 @@ enum Periode {
   P3
   P4
   P5
-}
-
-model Sequence {
-  id        String   @id @default(cuid())
-  titre     String
-  matiereId String
-  matiere   Matiere  @relation(fields: [matiereId], references: [id], onDelete: Cascade)
-  periode   Periode?
-  objectifs String?
-  ordre     Int
-  seances   Seance[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("sequences")
-}
-
-model Seance {
-  id         String   @id @default(cuid())
-  titre      String
-  sequenceId String
-  sequence   Sequence @relation(fields: [sequenceId], references: [id], onDelete: Cascade)
-  date       DateTime?
-  ordre      Int
-  fiches     Fiche[]
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  @@map("seances")
-}
-
-model Fiche {
-  id        String   @id @default(cuid())
-  titre     String
-  seanceId  String
-  seance    Seance   @relation(fields: [seanceId], references: [id], onDelete: Cascade)
-  ordre     Int
-  items     Item[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("fiches")
-}
-
-model Item {
-  id        String   @id @default(cuid())
-  ficheId   String
-  fiche     Fiche    @relation(fields: [ficheId], references: [id], onDelete: Cascade)
-  ordre     Int
-  duree     Int? // minutes
-  contenu   Json // TipTap JSON (JSONB PostgreSQL)
-  createdAt DateTime @default(now())
-
-  @@map("items")
 }

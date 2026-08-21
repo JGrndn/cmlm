@@ -51,7 +51,7 @@ export default function SignInPage() {
             <BookOpen className="h-6 w-6 text-white" />
           </div>
           <h1 className="text-xl font-semibold text-gray-900">CMLM</h1>
-          <p className="text-sm text-gray-500 mt-1">Cahier de Mise en Ligne des Matières</p>
+          <p className="text-sm text-gray-500 mt-1">C'est Moi La Maîtresse !</p>
         </div>
 
         <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6">
