@@ -1,6 +1,7 @@
 import { initTRPC, TRPCError } from '@trpc/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth/auth';
+import { DomainError } from '@/lib/errors/domain-error';
 
 export const createContext = async () => {
   const session = await auth();
@@ -27,3 +28,19 @@ export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
     },
   });
 });
+
+const DOMAIN_CODE_MAP: Record<string, TRPCError['code']> = {
+  NOT_FOUND: 'NOT_FOUND',
+  FORBIDDEN: 'FORBIDDEN',
+  CONFLICT: 'CONFLICT',
+};
+
+export function mapDomainError(e: unknown): never {
+  if (e instanceof DomainError) {
+    throw new TRPCError({
+      code: DOMAIN_CODE_MAP[e.code] ?? 'INTERNAL_SERVER_ERROR',
+      message: e.message,
+    });
+  }
+  throw e;
+}

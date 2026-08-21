@@ -1,36 +1,13 @@
 import { z } from 'zod';
-import { TRPCError } from '@trpc/server';
-import { createTRPCRouter, protectedProcedure } from '@/server/trpc';
-import { prisma as _db } from '@/lib/prisma';
-
-type Db = typeof _db;
-
-async function assertMatiereOwner(prisma: Db, matiereId: string, userId: string) {
-  const matiere = await prisma.matiere.findFirst({
-    where: { id: matiereId, classeur: { userId } },
-  });
-  if (!matiere) throw new TRPCError({ code: 'NOT_FOUND' });
-  return matiere;
-}
+import { createTRPCRouter, protectedProcedure, mapDomainError } from '@/server/trpc';
+import { matiereService } from '@/server/services';
 
 export const matiereRouter = createTRPCRouter({
   list: protectedProcedure
     .input(z.object({ classeurId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const classeur = await ctx.prisma.classeur.findFirst({
-        where: { id: input.classeurId, userId: ctx.session.user.id },
-      });
-      if (!classeur) throw new TRPCError({ code: 'NOT_FOUND' });
-
-      return ctx.prisma.matiere.findMany({
-        where: { classeurId: input.classeurId },
-        orderBy: { ordre: 'asc' },
-        include: {
-          sousDomaine: { include: { domaine: true } },
-          _count: { select: { sequences: true } },
-        },
-      });
-    }),
+    .query(({ ctx, input }) =>
+      matiereService(ctx.prisma).list(input.classeurId, ctx.session.user.id).catch(mapDomainError),
+    ),
 
   create: protectedProcedure
     .input(
@@ -40,15 +17,9 @@ export const matiereRouter = createTRPCRouter({
         sousDomainId: z.string().optional(),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
-      const classeur = await ctx.prisma.classeur.findFirst({
-        where: { id: input.classeurId, userId: ctx.session.user.id },
-      });
-      if (!classeur) throw new TRPCError({ code: 'NOT_FOUND' });
-
-      const count = await ctx.prisma.matiere.count({ where: { classeurId: input.classeurId } });
-      return ctx.prisma.matiere.create({ data: { ...input, ordre: count + 1 } });
-    }),
+    .mutation(({ ctx, input }) =>
+      matiereService(ctx.prisma).create(input, ctx.session.user.id).catch(mapDomainError),
+    ),
 
   update: protectedProcedure
     .input(
@@ -58,29 +29,20 @@ export const matiereRouter = createTRPCRouter({
         sousDomainId: z.string().nullable().optional(),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(({ ctx, input }) => {
       const { id, ...data } = input;
-      await assertMatiereOwner(ctx.prisma, id, ctx.session.user.id);
-      return ctx.prisma.matiere.update({ where: { id }, data });
+      return matiereService(ctx.prisma).update(id, data, ctx.session.user.id).catch(mapDomainError);
     }),
 
   delete: protectedProcedure
     .input(z.object({ id: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      await assertMatiereOwner(ctx.prisma, input.id, ctx.session.user.id);
-      return ctx.prisma.matiere.delete({ where: { id: input.id } });
-    }),
+    .mutation(({ ctx, input }) =>
+      matiereService(ctx.prisma).delete(input.id, ctx.session.user.id).catch(mapDomainError),
+    ),
 
   reorder: protectedProcedure
     .input(z.object({ ids: z.array(z.string()) }))
-    .mutation(async ({ ctx, input }) => {
-      await Promise.all(
-        input.ids.map((id, ordre) =>
-          ctx.prisma.matiere.updateMany({
-            where: { id, classeur: { userId: ctx.session.user.id } },
-            data: { ordre: ordre + 1 },
-          }),
-        ),
-      );
-    }),
+    .mutation(({ ctx, input }) =>
+      matiereService(ctx.prisma).reorder(input.ids, ctx.session.user.id).catch(mapDomainError),
+    ),
 });

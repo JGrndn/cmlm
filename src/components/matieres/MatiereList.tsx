@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { trpc } from '@/lib/trpc/client';
 import type { RouterOutputs } from '@/lib/trpc/types';
 import { Plus, Pencil, Trash2, ChevronRight } from 'lucide-react';
+import { MatiereSlideOver } from './MatiereSlideOver';
 
 type Matiere = RouterOutputs['matiere']['list'][0];
 
@@ -14,9 +15,9 @@ export function MatiereList({
   classeurId: string;
   initialMatieres: Matiere[];
 }) {
-  const [newTitre, setNewTitre] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitre, setEditTitre] = useState('');
+  const [isSlideOverOpen, setIsSlideOverOpen] = useState(false);
   const utils = trpc.useUtils();
 
   const { data: matieres = initialMatieres } = trpc.matiere.list.useQuery(
@@ -24,9 +25,6 @@ export function MatiereList({
     { initialData: initialMatieres },
   );
 
-  const createMutation = trpc.matiere.create.useMutation({
-    onSuccess: () => { utils.matiere.list.invalidate(); setNewTitre(''); },
-  });
   const updateMutation = trpc.matiere.update.useMutation({
     onSuccess: () => { utils.matiere.list.invalidate(); setEditingId(null); },
   });
@@ -80,24 +78,20 @@ export function MatiereList({
         ))}
       </ul>
 
-      <form
-        onSubmit={(e) => { e.preventDefault(); if (newTitre.trim()) createMutation.mutate({ titre: newTitre, classeurId }); }}
-        className="flex gap-2"
-      >
-        <input
-          placeholder="Nouvelle matière…"
-          className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm"
-          value={newTitre}
-          onChange={(e) => setNewTitre(e.target.value)}
-        />
+      <div className="flex justify-end">
         <button
-          type="submit"
-          disabled={!newTitre.trim() || createMutation.isPending}
-          className="flex items-center gap-1.5 px-3 py-2 bg-blue-700 text-white text-sm rounded-md hover:bg-blue-800 disabled:opacity-50"
+          onClick={() => setIsSlideOverOpen(true)}
+          className="inline-flex items-center gap-1.5 px-3 py-2 bg-blue-700 text-white text-sm rounded-md hover:bg-blue-800"
         >
-          <Plus className="h-4 w-4" /> Ajouter
+          <Plus className="h-4 w-4" /> Nouvelle matière
         </button>
-      </form>
+      </div>
+      <MatiereSlideOver
+        classeurId={classeurId}
+        isOpen={isSlideOverOpen}
+        onClose={() => setIsSlideOverOpen(false)}
+        onSuccess={() => utils.matiere.list.invalidate()}
+      />
     </div>
   );
 }
