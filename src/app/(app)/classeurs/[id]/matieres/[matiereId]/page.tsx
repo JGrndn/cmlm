@@ -2,6 +2,7 @@ import { auth } from '@/lib/auth/auth';
 import { redirect, notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
+import { MatiereGrid } from '@/components/matieres/MatiereGrid';
 import { SequenceList } from '@/components/sequences/SequenceList';
 import type { RouterOutputs } from '@/lib/trpc/types';
 
@@ -19,7 +20,15 @@ export default async function MatierePage({
     where: { id: matiereId, classeur: { id, userId: session.user!.id! } },
     include: {
       classeur: { include: { anneeScolaire: true, niveau: true } },
-      sousDomaine: { include: { domaine: true } },
+      domaine: {
+        include: {
+          sousDomaines: {
+            where: { matiereId: null },
+            orderBy: { label: 'asc' },
+          },
+        },
+      },
+      sousDomaines: { orderBy: { label: 'asc' } },
       sequences: {
         orderBy: { ordre: 'asc' },
         include: { _count: { select: { seances: true } } },
@@ -29,8 +38,15 @@ export default async function MatierePage({
 
   if (!matiere) notFound();
 
+  const initialSequences = matiere.sequences as unknown as RouterOutputs['sequence']['list'];
+
+  const allSousDomaines = [
+    ...(matiere.domaine?.sousDomaines ?? []),
+    ...matiere.sousDomaines,
+  ];
+
   return (
-    <main className="p-6 max-w-3xl mx-auto">
+    <main className="p-6 max-w-5xl mx-auto">
       <Breadcrumb
         items={[
           { label: 'Mes classeurs', href: '/classeurs' },
@@ -41,18 +57,28 @@ export default async function MatierePage({
 
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">{matiere.titre}</h1>
-        {matiere.sousDomaine && (
-          <p className="text-sm text-gray-500 mt-1">
-            {matiere.sousDomaine.domaine.label} › {matiere.sousDomaine.label}
-          </p>
+        {matiere.domaine && (
+          <p className="text-sm text-gray-500 mt-1">{matiere.domaine.label}</p>
         )}
       </div>
 
-      <SequenceList
-        classeurId={id}
-        matiereId={matiereId}
-        initialSequences={matiere.sequences as unknown as RouterOutputs['sequence']['list']}
-      />
+      {matiere.domaine && allSousDomaines.length > 0 ? (
+        <MatiereGrid
+          classeurId={id}
+          matiereId={matiereId}
+          domaineId={matiere.domaineId!}
+          sousDomaines={allSousDomaines}
+          initialSequences={initialSequences}
+          initialPeriodesVisibles={matiere.periodesVisibles as string[]}
+          initialSousDomainIdsVisibles={matiere.sousDomainIdsVisibles}
+        />
+      ) : (
+        <SequenceList
+          classeurId={id}
+          matiereId={matiereId}
+          initialSequences={initialSequences}
+        />
+      )}
     </main>
   );
 }

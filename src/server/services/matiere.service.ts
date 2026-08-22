@@ -1,4 +1,5 @@
 import type { PrismaClient } from '@/generated/prisma';
+import { Periode } from '@/generated/prisma';
 import { DomainError } from '@/lib/errors/domain-error';
 import type {
   MatiereDto,
@@ -9,7 +10,7 @@ import type {
 import { toMatiereDto, toMatiereListItems } from '@/server/mappers/matiere.mapper';
 
 const LIST_INCLUDE = {
-  sousDomaine: { include: { domaine: true } },
+  domaine: true,
   _count: { select: { sequences: true } },
 } as const;
 
@@ -41,7 +42,15 @@ export class MatiereService {
 
   async update(id: string, input: UpdateMatiereInput, userId: string): Promise<MatiereDto> {
     await this.assertOwner(id, userId);
-    const row = await this.db.matiere.update({ where: { id }, data: input });
+    const row = await this.db.matiere.update({
+      where: { id },
+      data: {
+        titre: input.titre,
+        domaineId: input.domaineId,
+        periodesVisibles: input.periodesVisibles as Periode[] | undefined,
+        sousDomainIdsVisibles: input.sousDomainIdsVisibles,
+      },
+    });
     return toMatiereDto(row);
   }
 

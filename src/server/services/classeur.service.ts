@@ -25,7 +25,7 @@ const DETAIL_INCLUDE = {
   anneeScolaire: true,
   matieres: {
     orderBy: { ordre: 'asc' as const },
-    include: { sousDomaine: { include: { domaine: true } } },
+    include: { domaine: true },
   },
 } as const;
 
@@ -97,7 +97,7 @@ export class ClasseurService {
           create: source.matieres.map((m) => ({
             titre: m.titre,
             ordre: m.ordre,
-            sousDomainId: m.sousDomainId,
+            domaineId: m.domaineId,
             sequences: {
               create: m.sequences.map((s) => ({
                 titre: s.titre,

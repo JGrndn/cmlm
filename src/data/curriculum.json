@@ -1,0 +1,202 @@
+{
+  "meta": {
+    "source": "Ministère de l'Éducation nationale — programmes officiels",
+    "reference": "BO n°41 du 31 octobre 2024 (cycle 1) — programmes en vigueur rentrée 2025",
+    "applicable": "2025-2026"
+  },
+  "niveaux": [
+    { "code": "PS",  "label": "Petite Section",       "cycle": "cycle1" },
+    { "code": "MS",  "label": "Moyenne Section",       "cycle": "cycle1" },
+    { "code": "GS",  "label": "Grande Section",        "cycle": "cycle1" },
+    { "code": "CP",  "label": "Cours Préparatoire",    "cycle": "cycle2" },
+    { "code": "CE1", "label": "Cours Élémentaire 1",   "cycle": "cycle2" },
+    { "code": "CE2", "label": "Cours Élémentaire 2",   "cycle": "cycle2" },
+    { "code": "CM1", "label": "Cours Moyen 1",         "cycle": "cycle3" },
+    { "code": "CM2", "label": "Cours Moyen 2",         "cycle": "cycle3" }
+  ],
+  "cycles": {
+    "cycle1": {
+      "label": "Cycle 1 — École maternelle",
+      "niveaux": ["PS", "MS", "GS"],
+      "domaines": [
+        {
+          "code": "c1-langage",
+          "label": "Le développement et la structuration du langage oral et écrit",
+          "sousDomaines": [
+            { "code": "c1-langage-oral",  "label": "L'oral" },
+            { "code": "c1-langage-ecrit", "label": "L'écrit" }
+          ]
+        },
+        {
+          "code": "c1-activites-physiques",
+          "label": "Agir, s'exprimer, comprendre à travers les activités physiques",
+          "sousDomaines": [
+            { "code": "c1-ap-deplacer",       "label": "Se déplacer" },
+            { "code": "c1-ap-equilibres",     "label": "Construire des équilibres" },
+            { "code": "c1-ap-corps",          "label": "S'exprimer avec son corps" },
+            { "code": "c1-ap-cooperer",       "label": "Coopérer et s'opposer" }
+          ]
+        },
+        {
+          "code": "c1-activites-artistiques",
+          "label": "Agir, s'exprimer, comprendre à travers les activités artistiques",
+          "sousDomaines": []
+        },
+        {
+          "code": "c1-maths",
+          "label": "L'acquisition des premiers outils mathématiques",
+          "sousDomaines": [
+            { "code": "c1-maths-nombres",          "label": "Découvrir les nombres" },
+            { "code": "c1-maths-utiliser-nombres", "label": "Utiliser les nombres" },
+            { "code": "c1-maths-solides",          "label": "Explorer les solides et formes planes" },
+            { "code": "c1-maths-grandeurs",        "label": "Explorer les grandeurs" },
+            { "code": "c1-maths-motifs",           "label": "Se familiariser avec les motifs organisés" }
+          ]
+        },
+        {
+          "code": "c1-temps-espace",
+          "label": "Se repérer dans le temps et l'espace",
+          "sousDomaines": []
+        },
+        {
+          "code": "c1-monde-vivant",
+          "label": "Découvrir le monde du vivant, de la matière et des objets",
+          "sousDomaines": []
+        }
+      ]
+    },
+    "cycle2": {
+      "label": "Cycle 2 — Apprentissages fondamentaux",
+      "niveaux": ["CP", "CE1", "CE2"],
+      "domaines": [
+        {
+          "code": "c2-francais",
+          "label": "Français",
+          "sousDomaines": [
+            { "code": "c2-fr-oral",       "label": "Langage oral" },
+            { "code": "c2-fr-lecture",    "label": "Lecture et compréhension de l'écrit" },
+            { "code": "c2-fr-ecriture",   "label": "Écriture" },
+            { "code": "c2-fr-langue",     "label": "Étude de la langue" },
+            { "code": "c2-fr-litt",       "label": "Littérature" }
+          ]
+        },
+        {
+          "code": "c2-maths",
+          "label": "Mathématiques",
+          "sousDomaines": [
+            { "code": "c2-ma-nombres",    "label": "Nombres et calculs" },
+            { "code": "c2-ma-grandeurs",  "label": "Grandeurs et mesures" },
+            { "code": "c2-ma-geometrie",  "label": "Espace et géométrie" }
+          ]
+        },
+        {
+          "code": "c2-emc",
+          "label": "Enseignement moral et civique",
+          "sousDomaines": []
+        },
+        {
+          "code": "c2-histoire-geo",
+          "label": "Histoire-géographie",
+          "sousDomaines": [
+            { "code": "c2-hg-histoire",   "label": "Histoire" },
+            { "code": "c2-hg-geo",        "label": "Géographie" }
+          ]
+        },
+        {
+          "code": "c2-sciences",
+          "label": "Sciences et technologie",
+          "sousDomaines": []
+        },
+        {
+          "code": "c2-arts-plastiques",
+          "label": "Arts plastiques",
+          "sousDomaines": []
+        },
+        {
+          "code": "c2-musique",
+          "label": "Éducation musicale",
+          "sousDomaines": []
+        },
+        {
+          "code": "c2-eps",
+          "label": "Éducation physique et sportive",
+          "sousDomaines": []
+        },
+        {
+          "code": "c2-langues",
+          "label": "Enseignements à dominante langagière",
+          "sousDomaines": []
+        }
+      ]
+    },
+    "cycle3": {
+      "label": "Cycle 3 — Consolidation",
+      "niveaux": ["CM1", "CM2"],
+      "domaines": [
+        {
+          "code": "c3-francais",
+          "label": "Français",
+          "sousDomaines": [
+            { "code": "c3-fr-oral",       "label": "Langage oral" },
+            { "code": "c3-fr-lecture",    "label": "Lecture et compréhension de l'écrit" },
+            { "code": "c3-fr-ecriture",   "label": "Écriture" },
+            { "code": "c3-fr-langue",     "label": "Étude de la langue" },
+            { "code": "c3-fr-litt",       "label": "Littérature" }
+          ]
+        },
+        {
+          "code": "c3-maths",
+          "label": "Mathématiques",
+          "sousDomaines": [
+            { "code": "c3-ma-nombres",    "label": "Nombres et calculs" },
+            { "code": "c3-ma-grandeurs",  "label": "Grandeurs et mesures" },
+            { "code": "c3-ma-geometrie",  "label": "Espace et géométrie" }
+          ]
+        },
+        {
+          "code": "c3-emc",
+          "label": "Enseignement moral et civique",
+          "sousDomaines": []
+        },
+        {
+          "code": "c3-histoire-geo",
+          "label": "Histoire-géographie",
+          "sousDomaines": [
+            { "code": "c3-hg-histoire",   "label": "Histoire" },
+            { "code": "c3-hg-geo",        "label": "Géographie" }
+          ]
+        },
+        {
+          "code": "c3-sciences",
+          "label": "Sciences et technologie",
+          "sousDomaines": [
+            { "code": "c3-sc-matiere",    "label": "Matière, mouvement, énergie, information" },
+            { "code": "c3-sc-vivant",     "label": "Le vivant, sa diversité et les fonctions qui le caractérisent" },
+            { "code": "c3-sc-materiaux",  "label": "Matériaux et objets techniques" },
+            { "code": "c3-sc-terre",      "label": "La planète Terre, les êtres vivants dans leur environnement" }
+          ]
+        },
+        {
+          "code": "c3-arts-plastiques",
+          "label": "Arts plastiques",
+          "sousDomaines": []
+        },
+        {
+          "code": "c3-musique",
+          "label": "Éducation musicale",
+          "sousDomaines": []
+        },
+        {
+          "code": "c3-eps",
+          "label": "Éducation physique et sportive",
+          "sousDomaines": []
+        },
+        {
+          "code": "c3-lve",
+          "label": "Langue vivante étrangère ou régionale",
+          "sousDomaines": []
+        }
+      ]
+    }
+  }
+}

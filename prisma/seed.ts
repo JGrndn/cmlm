@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../src/generated/prisma/client';
 
@@ -55,29 +56,41 @@ async function main() {
     });
   }
 
-  // Domaines et sous-domaines — Cycle 1
+  // Domaines et sous-domaines — Cycle 1 (BO n°41 du 31 octobre 2024, applicable rentrée 2025)
   const domainesC1 = [
     {
-      label: 'Mobiliser le langage dans toutes ses dimensions',
+      label: 'Le développement et la structuration du langage oral et écrit',
       sousDomaines: ["L'oral", "L'écrit"],
     },
     {
-      label: "Agir, s'exprimer, comprendre à travers l'activité physique",
-      sousDomaines: [],
-    },
-    {
-      label: 'Explorer le monde',
+      label: "Agir, s'exprimer, comprendre à travers les activités physiques",
       sousDomaines: [
-        'Se repérer dans le temps et dans l\'espace',
-        'Explorer le monde du vivant, des objets et de la matière',
+        'Se déplacer',
+        'Construire des équilibres',
+        "S'exprimer avec son corps",
+        "Coopérer et s'opposer",
       ],
     },
     {
-      label: 'Construire les premiers outils pour structurer sa pensée',
+      label: "Agir, s'exprimer, comprendre à travers les activités artistiques",
       sousDomaines: [],
     },
     {
-      label: "S'approprier le langage artistique",
+      label: "L'acquisition des premiers outils mathématiques",
+      sousDomaines: [
+        'Découvrir les nombres',
+        'Utiliser les nombres',
+        'Explorer les solides et formes planes',
+        'Explorer les grandeurs',
+        'Se familiariser avec les motifs organisés',
+      ],
+    },
+    {
+      label: "Se repérer dans le temps et l'espace",
+      sousDomaines: [],
+    },
+    {
+      label: 'Découvrir le monde du vivant, de la matière et des objets',
       sousDomaines: [],
     },
   ];

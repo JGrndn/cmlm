@@ -1,5 +1,9 @@
 {
   "permissions": {
+    "allow": [
+      "Bash(npx prisma *)",
+      "Bash(npx tsc *)"
+    ],
     "additionalDirectories": [
       "c:\\dev\\private\\cmlm\\src\\lib\\domain\\dto",
       "c:\\dev\\private\\cmlm\\src\\server\\mappers",

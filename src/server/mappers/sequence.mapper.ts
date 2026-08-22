@@ -12,6 +12,7 @@ export function toSequenceDto(raw: Sequence): SequenceDto {
     titre: raw.titre,
     ordre: raw.ordre,
     matiereId: raw.matiereId,
+    sousDomainId: raw.sousDomainId,
     periode: raw.periode as Periode | null,
     objectifs: raw.objectifs,
     createdAt: raw.createdAt,

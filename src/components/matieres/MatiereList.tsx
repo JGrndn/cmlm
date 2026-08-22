@@ -10,9 +10,11 @@ type Matiere = RouterOutputs['matiere']['list'][0];
 
 export function MatiereList({
   classeurId,
+  cycleId,
   initialMatieres,
 }: {
   classeurId: string;
+  cycleId: string;
   initialMatieres: Matiere[];
 }) {
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -51,8 +53,8 @@ export function MatiereList({
             ) : (
               <div className="flex-1 min-w-0">
                 <span className="font-medium text-gray-900">{m.titre}</span>
-                {m.sousDomaine && (
-                  <span className="ml-2 text-xs text-gray-400">{m.sousDomaine.domaine.label} › {m.sousDomaine.label}</span>
+                {m.domaine && (
+                  <span className="ml-2 text-xs text-gray-400">{m.domaine.label}</span>
                 )}
                 <span className="ml-2 text-xs text-gray-400">{m._count.sequences} séquence{m._count.sequences !== 1 ? 's' : ''}</span>
               </div>
@@ -88,6 +90,7 @@ export function MatiereList({
       </div>
       <MatiereSlideOver
         classeurId={classeurId}
+        cycleId={cycleId}
         isOpen={isSlideOverOpen}
         onClose={() => setIsSlideOverOpen(false)}
         onSuccess={() => utils.matiere.list.invalidate()}

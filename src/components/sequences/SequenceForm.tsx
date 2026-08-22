@@ -17,10 +17,15 @@ interface SequenceFormProps {
   onSubmit: (data: SequenceFormData) => void;
   onCancel: () => void;
   isLoading?: boolean;
+  defaultPeriode?: Periode;
 }
 
-export function SequenceForm({ onSubmit, onCancel, isLoading }: SequenceFormProps) {
-  const [formData, setFormData] = useState<SequenceFormData>({ titre: '', periode: '', objectifs: '' });
+export function SequenceForm({ onSubmit, onCancel, isLoading, defaultPeriode }: SequenceFormProps) {
+  const [formData, setFormData] = useState<SequenceFormData>({
+    titre: '',
+    periode: defaultPeriode ?? '',
+    objectifs: '',
+  });
 
   function updateField<K extends keyof SequenceFormData>(field: K, value: SequenceFormData[K]) {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -50,6 +55,7 @@ export function SequenceForm({ onSubmit, onCancel, isLoading }: SequenceFormProp
         onChange={(v) => updateField('periode', v as Periode | '')}
         options={PERIODES.map((p) => ({ value: p, label: p }))}
         placeholder="Sans période"
+        disabled={!!defaultPeriode}
       />
       <FormField
         label="Objectifs"

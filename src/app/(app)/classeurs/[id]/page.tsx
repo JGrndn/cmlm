@@ -23,7 +23,7 @@ export default async function ClasseurPage({
       matieres: {
         orderBy: { ordre: 'asc' },
         include: {
-          sousDomaine: { include: { domaine: true } },
+          domaine: true,
           _count: { select: { sequences: true } },
         },
       },
@@ -48,7 +48,7 @@ export default async function ClasseurPage({
         </p>
       </div>
 
-      <MatiereList classeurId={id} initialMatieres={classeur.matieres as unknown as RouterOutputs['matiere']['list']} />
+      <MatiereList classeurId={id} cycleId={classeur.niveau.cycleId} initialMatieres={classeur.matieres as unknown as RouterOutputs['matiere']['list']} />
     </main>
   );
 }

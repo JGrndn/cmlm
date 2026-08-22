@@ -59,16 +59,19 @@ model Domaine {
   cycleId      String
   cycle        Cycle         @relation(fields: [cycleId], references: [id])
   sousDomaines SousDomaine[]
+  matieres     Matiere[]
 
   @@map("domaines")
 }
 
 model SousDomaine {
-  id        String    @id @default(cuid())
+  id        String     @id @default(cuid())
   label     String
   domaineId String
-  matieres  Matiere[]
-  domaine   Domaine   @relation(fields: [domaineId], references: [id])
+  matiereId String?
+  domaine   Domaine    @relation(fields: [domaineId], references: [id])
+  matiere   Matiere?   @relation(fields: [matiereId], references: [id])
+  sequences Sequence[]
 
   @@map("sous_domaines")
 }
@@ -90,31 +93,36 @@ model Classeur {
 }
 
 model Matiere {
-  id           String       @id @default(cuid())
-  titre        String
-  classeurId   String
-  sousDomainId String?
-  ordre        Int
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
-  classeur     Classeur     @relation(fields: [classeurId], references: [id], onDelete: Cascade)
-  sousDomaine  SousDomaine? @relation(fields: [sousDomainId], references: [id])
-  sequences    Sequence[]
+  id                    String     @id @default(cuid())
+  titre                 String
+  classeurId            String
+  domaineId             String?
+  periodesVisibles      Periode[]
+  sousDomainIdsVisibles String[]
+  ordre                 Int
+  createdAt             DateTime   @default(now())
+  updatedAt             DateTime   @updatedAt
+  classeur              Classeur   @relation(fields: [classeurId], references: [id], onDelete: Cascade)
+  domaine               Domaine?   @relation(fields: [domaineId], references: [id])
+  sousDomaines          SousDomaine[]
+  sequences             Sequence[]
 
   @@map("matieres")
 }
 
 model Sequence {
-  id        String   @id @default(cuid())
-  titre     String
-  matiereId String
-  periode   Periode?
-  objectifs String?
-  ordre     Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  seances   Seance[]
-  matiere   Matiere  @relation(fields: [matiereId], references: [id], onDelete: Cascade)
+  id            String       @id @default(cuid())
+  titre         String
+  matiereId     String
+  sousDomainId  String?
+  periode       Periode?
+  objectifs     String?
+  ordre         Int
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  seances       Seance[]
+  matiere       Matiere      @relation(fields: [matiereId], references: [id], onDelete: Cascade)
+  sousDomaine   SousDomaine? @relation(fields: [sousDomainId], references: [id], onDelete: SetNull)
 
   @@map("sequences")
 }

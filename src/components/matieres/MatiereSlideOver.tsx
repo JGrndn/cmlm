@@ -6,12 +6,13 @@ import { MatiereForm } from './MatiereForm';
 
 interface MatiereSlideOverProps {
   classeurId: string;
+  cycleId: string;
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
 }
 
-export function MatiereSlideOver({ classeurId, isOpen, onClose, onSuccess }: MatiereSlideOverProps) {
+export function MatiereSlideOver({ classeurId, cycleId, isOpen, onClose, onSuccess }: MatiereSlideOverProps) {
   const createMutation = trpc.matiere.create.useMutation({
     onSuccess: () => {
       onSuccess();
@@ -22,7 +23,8 @@ export function MatiereSlideOver({ classeurId, isOpen, onClose, onSuccess }: Mat
   return (
     <ResourceSlideOver isOpen={isOpen} onClose={onClose} title="Nouvelle matière" error={createMutation.error}>
       <MatiereForm
-        onSubmit={(data) => createMutation.mutate({ titre: data.titre, classeurId })}
+        cycleId={cycleId}
+        onSubmit={(data) => createMutation.mutate({ titre: data.titre, classeurId, domaineId: data.domaineId })}
         onCancel={onClose}
         isLoading={createMutation.isPending}
       />
