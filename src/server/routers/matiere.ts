@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { Periode } from '@/generated/prisma';
 import { createTRPCRouter, protectedProcedure, mapDomainError } from '@/server/trpc';
 import { matiereService } from '@/server/services';
 
@@ -28,7 +27,7 @@ export const matiereRouter = createTRPCRouter({
         id: z.string(),
         titre: z.string().min(1).optional(),
         domaineId: z.string().nullable().optional(),
-        periodesVisibles: z.array(z.nativeEnum(Periode)).optional(),
+        periodesVisibles: z.array(z.string()).optional(),
         sousDomainIdsVisibles: z.array(z.string()).optional(),
       }),
     )

@@ -49,8 +49,21 @@ model AnneeScolaire {
   debut     Int
   fin       Int
   classeurs Classeur[]
+  periodes  Periode[]
 
   @@map("annees_scolaires")
+}
+
+model Periode {
+  id              String        @id @default(cuid())
+  label           String
+  dateDebut       DateTime
+  dateFin         DateTime
+  anneeScolaireId String
+  anneeScolaire   AnneeScolaire @relation(fields: [anneeScolaireId], references: [id])
+  sequences       Sequence[]
+
+  @@map("periodes")
 }
 
 model Domaine {
@@ -97,7 +110,7 @@ model Matiere {
   titre                 String
   classeurId            String
   domaineId             String?
-  periodesVisibles      Periode[]
+  periodesVisibles      String[]
   sousDomainIdsVisibles String[]
   ordre                 Int
   createdAt             DateTime   @default(now())
@@ -115,7 +128,7 @@ model Sequence {
   titre         String
   matiereId     String
   sousDomainId  String?
-  periode       Periode?
+  periodeId     String?
   objectifs     String?
   ordre         Int
   createdAt     DateTime     @default(now())
@@ -123,6 +136,7 @@ model Sequence {
   seances       Seance[]
   matiere       Matiere      @relation(fields: [matiereId], references: [id], onDelete: Cascade)
   sousDomaine   SousDomaine? @relation(fields: [sousDomainId], references: [id], onDelete: SetNull)
+  periode       Periode?     @relation(fields: [periodeId], references: [id], onDelete: SetNull)
 
   @@map("sequences")
 }
@@ -171,12 +185,4 @@ enum Role {
   MANAGER
   CONTRIBUTOR
   VIEWER
-}
-
-enum Periode {
-  P1
-  P2
-  P3
-  P4
-  P5
 }

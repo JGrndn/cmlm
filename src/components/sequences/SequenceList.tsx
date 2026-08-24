@@ -12,10 +12,12 @@ export function SequenceList({
   matiereId,
   classeurId,
   initialSequences,
+  anneeScolaireId,
 }: {
   matiereId: string;
   classeurId: string;
   initialSequences: Sequence[];
+  anneeScolaireId?: string;
 }) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitre, setEditTitre] = useState('');
@@ -53,7 +55,7 @@ export function SequenceList({
             ) : (
               <div className="flex-1 min-w-0">
                 <span className="font-medium text-gray-900">{s.titre}</span>
-                {s.periode && <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">{s.periode}</span>}
+                {s.periodeLabel && <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">{s.periodeLabel}</span>}
                 <span className="ml-2 text-xs text-gray-400">{s._count.seances} séance{s._count.seances !== 1 ? 's' : ''}</span>
               </div>
             )}
@@ -85,6 +87,7 @@ export function SequenceList({
         isOpen={isSlideOverOpen}
         onClose={() => setIsSlideOverOpen(false)}
         onSuccess={() => utils.sequence.list.invalidate()}
+        anneeScolaireId={anneeScolaireId}
       />
     </div>
   );

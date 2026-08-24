@@ -1,5 +1,4 @@
 import type { PrismaClient } from '@/generated/prisma';
-import { Periode } from '@/generated/prisma';
 import { DomainError } from '@/lib/errors/domain-error';
 import type {
   SequenceDto,
@@ -9,8 +8,15 @@ import type {
 } from '@/lib/domain/dto';
 import { toSequenceDto, toSequenceListItems } from '@/server/mappers/sequence.mapper';
 
+const PERIODE_SELECT = { select: { id: true, label: true } } as const;
+
 const LIST_INCLUDE = {
   _count: { select: { seances: true } },
+  periode: PERIODE_SELECT,
+} as const;
+
+const SINGLE_INCLUDE = {
+  periode: PERIODE_SELECT,
 } as const;
 
 export class SequenceService {
@@ -42,10 +48,11 @@ export class SequenceService {
         titre: input.titre,
         matiereId: input.matiereId,
         sousDomainId: input.sousDomainId,
-        periode: input.periode as Periode | undefined,
+        periodeId: input.periodeId,
         objectifs: input.objectifs,
         ordre: count + 1,
       },
+      include: SINGLE_INCLUDE,
     });
     return toSequenceDto(row);
   }
@@ -57,9 +64,10 @@ export class SequenceService {
       data: {
         titre: input.titre,
         sousDomainId: input.sousDomainId,
-        periode: input.periode as Periode | null | undefined,
+        periodeId: input.periodeId,
         objectifs: input.objectifs,
       },
+      include: SINGLE_INCLUDE,
     });
     return toSequenceDto(row);
   }

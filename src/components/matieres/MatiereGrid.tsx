@@ -5,45 +5,53 @@ import { trpc } from '@/lib/trpc/client';
 import type { RouterOutputs } from '@/lib/trpc/types';
 import { Plus, ChevronDown, Trash2 } from 'lucide-react';
 import { SequenceSlideOver } from '@/components/sequences/SequenceSlideOver';
-import type { Periode } from '@/generated/prisma';
-
-const PERIODES: Periode[] = ['P1', 'P2', 'P3', 'P4', 'P5'];
 
 type Sequence = RouterOutputs['sequence']['list'][0];
 type SousDomaine = { id: string; label: string; matiereId: string | null };
+type PeriodeItem = { id: string; label: string; dateDebut: Date | string; dateFin: Date | string };
 
 interface MatiereGridProps {
   classeurId: string;
   matiereId: string;
   domaineId: string;
+  anneeScolaireId: string;
   sousDomaines: SousDomaine[];
   initialSequences: Sequence[];
+  initialPeriodes: PeriodeItem[];
   initialPeriodesVisibles: string[];
   initialSousDomainIdsVisibles: string[];
+}
+
+function formatShortDate(d: Date | string) {
+  const date = typeof d === 'string' ? new Date(d) : d;
+  return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
 }
 
 export function MatiereGrid({
   classeurId,
   matiereId,
   domaineId,
+  anneeScolaireId,
   sousDomaines,
   initialSequences,
+  initialPeriodes,
   initialPeriodesVisibles,
   initialSousDomainIdsVisibles,
 }: MatiereGridProps) {
+  const [allPeriodes] = useState<PeriodeItem[]>(initialPeriodes);
   const [allSousDomaines, setAllSousDomaines] = useState<SousDomaine[]>(sousDomaines);
   const [visibleIds, setVisibleIds] = useState<Set<string>>(() =>
     (initialSousDomainIdsVisibles ?? []).length
       ? new Set(initialSousDomainIdsVisibles)
       : new Set(sousDomaines.map((s) => s.id)),
   );
-  const [visiblePeriodes, setVisiblePeriodes] = useState<Set<Periode>>(() =>
+  const [visiblePeriodes, setVisiblePeriodes] = useState<Set<string>>(() =>
     (initialPeriodesVisibles ?? []).length
-      ? new Set(initialPeriodesVisibles as Periode[])
-      : new Set(PERIODES),
+      ? new Set(initialPeriodesVisibles)
+      : new Set(allPeriodes.map((p) => p.id)),
   );
   const [dropdownOpen, setDropdownOpen] = useState<'sous-domaines' | 'periodes' | null>(null);
-  const [slideOver, setSlideOver] = useState<{ periode: Periode; sousDomainId: string } | null>(null);
+  const [slideOver, setSlideOver] = useState<{ periodeId: string; sousDomainId: string } | null>(null);
   const [isAddingSD, setIsAddingSD] = useState(false);
   const [newSDLabel, setNewSDLabel] = useState('');
   const sdDropdownRef = useRef<HTMLDivElement>(null);
@@ -114,20 +122,22 @@ export function MatiereGrid({
     });
   };
 
-  const togglePeriode = (p: Periode) => {
+  const togglePeriode = (id: string) => {
     setVisiblePeriodes((prev) => {
       const next = new Set(prev);
-      if (next.has(p)) next.delete(p);
-      else next.add(p);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
   };
 
   const visibleSousDomaines = allSousDomaines.filter((s) => visibleIds.has(s.id));
-  const activePeriodes = PERIODES.filter((p) => visiblePeriodes.has(p));
+  const activePeriodes = allPeriodes.filter((p) => visiblePeriodes.has(p.id));
 
-  const cellSequences = (sousDomainId: string, periode: Periode) =>
-    sequences.filter((s) => s.sousDomainId === sousDomainId && s.periode === periode);
+  const cellSequences = (sousDomainId: string, periodeId: string) =>
+    sequences.filter((s) => s.sousDomainId === sousDomainId && s.periodeId === periodeId);
+
+  const periodeOptions = allPeriodes.map((p) => ({ value: p.id, label: p.label }));
 
   return (
     <div>
@@ -209,23 +219,28 @@ export function MatiereGrid({
             onClick={() => setDropdownOpen((v) => (v === 'periodes' ? null : 'periodes'))}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-gray-300 rounded-md text-sm text-gray-700 bg-white hover:bg-gray-50"
           >
-            Périodes ({visiblePeriodes.size}/{PERIODES.length})
+            Périodes ({visiblePeriodes.size}/{allPeriodes.length})
             <ChevronDown className="h-4 w-4" />
           </button>
           {dropdownOpen === 'periodes' && (
-            <div className="absolute top-full left-0 mt-1 z-10 bg-white border border-gray-200 rounded-md shadow-lg min-w-32 py-1">
-              {PERIODES.map((p) => (
+            <div className="absolute top-full left-0 mt-1 z-10 bg-white border border-gray-200 rounded-md shadow-lg min-w-48 py-1">
+              {allPeriodes.map((p) => (
                 <label
-                  key={p}
+                  key={p.id}
                   className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer"
                 >
                   <input
                     type="checkbox"
-                    checked={visiblePeriodes.has(p)}
-                    onChange={() => togglePeriode(p)}
+                    checked={visiblePeriodes.has(p.id)}
+                    onChange={() => togglePeriode(p.id)}
                     className="h-3.5 w-3.5 rounded border-gray-300 text-blue-600"
                   />
-                  {p}
+                  <span className="flex-1">
+                    <span className="font-medium">{p.label}</span>
+                    <span className="ml-1.5 text-gray-400 text-xs">
+                      {formatShortDate(p.dateDebut)} – {formatShortDate(p.dateFin)}
+                    </span>
+                  </span>
                 </label>
               ))}
             </div>
@@ -239,11 +254,14 @@ export function MatiereGrid({
             <tr>
               {activePeriodes.map((p) => (
                 <th
-                  key={p}
+                  key={p.id}
                   className="px-3 py-2 bg-gray-50 border border-gray-200 font-medium text-gray-700 text-center"
                   style={{ width: `${100 / activePeriodes.length}%` }}
                 >
-                  {p}
+                  <div>{p.label}</div>
+                  <div className="text-xs font-normal text-gray-400">
+                    {formatShortDate(p.dateDebut)} – {formatShortDate(p.dateFin)}
+                  </div>
                 </th>
               ))}
             </tr>
@@ -261,9 +279,9 @@ export function MatiereGrid({
                 </tr>
                 <tr key={`${sd.id}-data`}>
                   {activePeriodes.map((p) => {
-                    const seqs = cellSequences(sd.id, p);
+                    const seqs = cellSequences(sd.id, p.id);
                     return (
-                      <td key={p} className="px-2 py-2 border border-gray-200 align-top">
+                      <td key={p.id} className="px-2 py-2 border border-gray-200 align-top">
                         <ul className="space-y-1 mb-1">
                           {seqs.map((s) => (
                             <li key={s.id}>
@@ -278,10 +296,11 @@ export function MatiereGrid({
                         </ul>
                         <button
                           type="button"
-                          onClick={() => setSlideOver({ periode: p, sousDomainId: sd.id })}
+                          onClick={() => setSlideOver({ periodeId: p.id, sousDomainId: sd.id })}
                           className="flex items-center gap-0.5 text-xs text-gray-400 hover:text-blue-600"
                         >
                           <Plus className="h-3 w-3" />
+                          Ajouter
                         </button>
                       </td>
                     );
@@ -309,8 +328,9 @@ export function MatiereGrid({
           isOpen
           onClose={() => setSlideOver(null)}
           onSuccess={() => utils.sequence.list.invalidate()}
-          defaultPeriode={slideOver.periode}
+          defaultPeriodeId={slideOver.periodeId}
           defaultSousDomainId={slideOver.sousDomainId}
+          periodeOptions={periodeOptions}
         />
       )}
     </div>

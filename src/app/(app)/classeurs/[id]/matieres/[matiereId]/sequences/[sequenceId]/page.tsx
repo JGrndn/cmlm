@@ -18,6 +18,7 @@ export default async function SequencePage({
   const sequence = await prisma.sequence.findFirst({
     where: { id: sequenceId, matiere: { id: matiereId, classeur: { id, userId: session.user!.id! } } },
     include: {
+      periode: { select: { id: true, label: true } },
       matiere: {
         include: {
           classeur: true,
@@ -51,7 +52,7 @@ export default async function SequencePage({
         <div className="flex items-center gap-3 mt-1">
           {sequence.periode && (
             <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-medium">
-              {sequence.periode}
+              {sequence.periode.label}
             </span>
           )}
           {sequence.objectifs && (

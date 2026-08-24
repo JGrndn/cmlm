@@ -1,12 +1,11 @@
-export type Periode = 'P1' | 'P2' | 'P3' | 'P4' | 'P5';
-
 export interface SequenceDto {
   id: string;
   titre: string;
   ordre: number;
   matiereId: string;
   sousDomainId: string | null;
-  periode: Periode | null;
+  periodeId: string | null;
+  periodeLabel: string | null;
   objectifs: string | null;
   createdAt: Date;
   updatedAt: Date;
@@ -20,13 +19,13 @@ export interface CreateSequenceInput {
   titre: string;
   matiereId: string;
   sousDomainId?: string;
-  periode?: Periode;
+  periodeId?: string;
   objectifs?: string;
 }
 
 export interface UpdateSequenceInput {
   titre?: string;
   sousDomainId?: string | null;
-  periode?: Periode | null;
+  periodeId?: string | null;
   objectifs?: string | null;
 }

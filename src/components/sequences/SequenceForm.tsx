@@ -3,13 +3,10 @@
 import { useState } from 'react';
 import { GenericForm } from '@/components/ui/GenericForm';
 import { FormField } from '@/components/ui/FormField';
-import type { Periode } from '@/generated/prisma';
-
-const PERIODES: Periode[] = ['P1', 'P2', 'P3', 'P4', 'P5'];
 
 interface SequenceFormData {
   titre: string;
-  periode: Periode | '';
+  periodeId: string;
   objectifs: string;
 }
 
@@ -17,13 +14,14 @@ interface SequenceFormProps {
   onSubmit: (data: SequenceFormData) => void;
   onCancel: () => void;
   isLoading?: boolean;
-  defaultPeriode?: Periode;
+  defaultPeriodeId?: string;
+  periodeOptions?: { value: string; label: string }[];
 }
 
-export function SequenceForm({ onSubmit, onCancel, isLoading, defaultPeriode }: SequenceFormProps) {
+export function SequenceForm({ onSubmit, onCancel, isLoading, defaultPeriodeId, periodeOptions = [] }: SequenceFormProps) {
   const [formData, setFormData] = useState<SequenceFormData>({
     titre: '',
-    periode: defaultPeriode ?? '',
+    periodeId: defaultPeriodeId ?? '',
     objectifs: '',
   });
 
@@ -49,13 +47,13 @@ export function SequenceForm({ onSubmit, onCancel, isLoading, defaultPeriode }: 
       />
       <FormField
         label="Période"
-        name="periode"
+        name="periodeId"
         type="select"
-        value={formData.periode}
-        onChange={(v) => updateField('periode', v as Periode | '')}
-        options={PERIODES.map((p) => ({ value: p, label: p }))}
+        value={formData.periodeId}
+        onChange={(v) => updateField('periodeId', v)}
+        options={periodeOptions}
         placeholder="Sans période"
-        disabled={!!defaultPeriode}
+        disabled={!!defaultPeriodeId}
       />
       <FormField
         label="Objectifs"

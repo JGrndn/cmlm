@@ -102,7 +102,7 @@ export class ClasseurService {
               create: m.sequences.map((s) => ({
                 titre: s.titre,
                 ordre: s.ordre,
-                periode: s.periode,
+                periodeId: null,
                 objectifs: s.objectifs,
                 seances: {
                   create: s.seances.map((se) => ({

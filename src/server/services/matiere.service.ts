@@ -1,5 +1,4 @@
 import type { PrismaClient } from '@/generated/prisma';
-import { Periode } from '@/generated/prisma';
 import { DomainError } from '@/lib/errors/domain-error';
 import type {
   MatiereDto,
@@ -47,7 +46,7 @@ export class MatiereService {
       data: {
         titre: input.titre,
         domaineId: input.domaineId,
-        periodesVisibles: input.periodesVisibles as Periode[] | undefined,
+        periodesVisibles: input.periodesVisibles,
         sousDomainIdsVisibles: input.sousDomainIdsVisibles,
       },
     });

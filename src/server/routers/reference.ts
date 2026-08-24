@@ -14,6 +14,49 @@ export const referenceRouter = createTRPCRouter({
     return ctx.prisma.anneeScolaire.findMany({ orderBy: { debut: 'asc' } });
   }),
 
+  listPeriodes: protectedProcedure
+    .input(z.object({ anneeScolaireId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      return ctx.prisma.periode.findMany({
+        where: { anneeScolaireId: input.anneeScolaireId },
+        orderBy: { dateDebut: 'asc' },
+      });
+    }),
+
+  createAnneeScolaire: protectedProcedure
+    .input(
+      z.object({
+        label: z.string().min(1),
+        debut: z.number().int(),
+        fin: z.number().int(),
+        periodes: z
+          .array(
+            z.object({
+              label: z.string().min(1),
+              dateDebut: z.string(),
+              dateFin: z.string(),
+            }),
+          )
+          .min(1),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return ctx.prisma.$transaction(async (tx) => {
+        const annee = await tx.anneeScolaire.create({
+          data: { label: input.label, debut: input.debut, fin: input.fin },
+        });
+        await tx.periode.createMany({
+          data: input.periodes.map((p) => ({
+            label: p.label,
+            dateDebut: new Date(p.dateDebut),
+            dateFin: new Date(p.dateFin),
+            anneeScolaireId: annee.id,
+          })),
+        });
+        return annee;
+      });
+    }),
+
   listDomaines: protectedProcedure
     .input(z.object({ cycleId: z.string() }))
     .query(async ({ ctx, input }) => {

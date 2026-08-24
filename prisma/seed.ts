@@ -4,6 +4,8 @@ import { PrismaClient } from '../src/generated/prisma/client';
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const db = prisma as any;
 
 async function main() {
   // Cycles
@@ -53,6 +55,58 @@ async function main() {
       where: { label: a.label },
       update: {},
       create: a,
+    });
+  }
+
+  // Périodes par année scolaire (dates académiques françaises approximatives)
+  const periodeDates: Record<string, { label: string; dateDebut: Date; dateFin: Date }[]> = {
+    '2024-2025': [
+      { label: 'P1', dateDebut: new Date('2024-09-02'), dateFin: new Date('2024-10-18') },
+      { label: 'P2', dateDebut: new Date('2024-11-04'), dateFin: new Date('2024-12-20') },
+      { label: 'P3', dateDebut: new Date('2025-01-06'), dateFin: new Date('2025-02-14') },
+      { label: 'P4', dateDebut: new Date('2025-03-03'), dateFin: new Date('2025-04-18') },
+      { label: 'P5', dateDebut: new Date('2025-04-28'), dateFin: new Date('2025-07-04') },
+    ],
+    '2025-2026': [
+      { label: 'P1', dateDebut: new Date('2025-09-02'), dateFin: new Date('2025-10-17') },
+      { label: 'P2', dateDebut: new Date('2025-11-03'), dateFin: new Date('2025-12-19') },
+      { label: 'P3', dateDebut: new Date('2026-01-05'), dateFin: new Date('2026-02-13') },
+      { label: 'P4', dateDebut: new Date('2026-03-02'), dateFin: new Date('2026-04-17') },
+      { label: 'P5', dateDebut: new Date('2026-04-27'), dateFin: new Date('2026-07-03') },
+    ],
+    '2026-2027': [
+      { label: 'P1', dateDebut: new Date('2026-09-01'), dateFin: new Date('2026-10-23') },
+      { label: 'P2', dateDebut: new Date('2026-11-09'), dateFin: new Date('2026-12-18') },
+      { label: 'P3', dateDebut: new Date('2027-01-04'), dateFin: new Date('2027-02-12') },
+      { label: 'P4', dateDebut: new Date('2027-03-01'), dateFin: new Date('2027-04-16') },
+      { label: 'P5', dateDebut: new Date('2027-04-26'), dateFin: new Date('2027-07-02') },
+    ],
+  };
+
+  for (const [anneeLabel, periodes] of Object.entries(periodeDates)) {
+    const annee = await prisma.anneeScolaire.findUnique({ where: { label: anneeLabel } });
+    if (!annee) continue;
+    for (const p of periodes) {
+      await db.periode.upsert({
+        where: { id: `${anneeLabel}-${p.label}` },
+        update: {},
+        create: { id: `${anneeLabel}-${p.label}`, ...p, anneeScolaireId: annee.id },
+      });
+    }
+  }
+
+  // Migration : periodesVisibles stockait des labels enum ("P1"…), on les remplace par les IDs déterministes
+  const OLD_LABELS = ['P1', 'P2', 'P3', 'P4', 'P5'];
+  const matieres = await db.matiere.findMany({
+    where: { periodesVisibles: { isEmpty: false } },
+    include: { classeur: { include: { anneeScolaire: true } } },
+  });
+  for (const m of matieres) {
+    if (!m.periodesVisibles.every((v: string) => OLD_LABELS.includes(v))) continue;
+    const anneeLabel = m.classeur.anneeScolaire.label;
+    await db.matiere.update({
+      where: { id: m.id },
+      data: { periodesVisibles: m.periodesVisibles.map((v: string) => `${anneeLabel}-${v}`) },
     });
   }
 

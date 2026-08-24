@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { Periode } from '@/generated/prisma';
 import { createTRPCRouter, protectedProcedure, mapDomainError } from '@/server/trpc';
 import { sequenceService } from '@/server/services';
 
@@ -16,7 +15,7 @@ export const sequenceRouter = createTRPCRouter({
         titre: z.string().min(1),
         matiereId: z.string(),
         sousDomainId: z.string().optional(),
-        periode: z.nativeEnum(Periode).optional(),
+        periodeId: z.string().optional(),
         objectifs: z.string().optional(),
       }),
     )
@@ -30,7 +29,7 @@ export const sequenceRouter = createTRPCRouter({
         id: z.string(),
         titre: z.string().min(1).optional(),
         sousDomainId: z.string().nullable().optional(),
-        periode: z.nativeEnum(Periode).nullable().optional(),
+        periodeId: z.string().nullable().optional(),
         objectifs: z.string().nullable().optional(),
       }),
     )

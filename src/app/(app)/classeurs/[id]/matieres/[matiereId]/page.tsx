@@ -38,6 +38,11 @@ export default async function MatierePage({
 
   if (!matiere) notFound();
 
+  const periodes = await prisma.periode.findMany({
+    where: { anneeScolaireId: matiere.classeur.anneeScolaireId },
+    orderBy: { dateDebut: 'asc' },
+  });
+
   const initialSequences = matiere.sequences as unknown as RouterOutputs['sequence']['list'];
 
   const allSousDomaines = [
@@ -67,8 +72,10 @@ export default async function MatierePage({
           classeurId={id}
           matiereId={matiereId}
           domaineId={matiere.domaineId!}
+          anneeScolaireId={matiere.classeur.anneeScolaireId}
           sousDomaines={allSousDomaines}
           initialSequences={initialSequences}
+          initialPeriodes={periodes}
           initialPeriodesVisibles={matiere.periodesVisibles as string[]}
           initialSousDomainIdsVisibles={matiere.sousDomainIdsVisibles}
         />
@@ -77,6 +84,7 @@ export default async function MatierePage({
           classeurId={id}
           matiereId={matiereId}
           initialSequences={initialSequences}
+          anneeScolaireId={matiere.classeur.anneeScolaireId}
         />
       )}
     </main>
