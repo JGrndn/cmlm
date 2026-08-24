@@ -155,21 +155,21 @@ export function MatiereGrid({
   const periodeOptions = allPeriodes.map((p) => ({ value: p.id, label: p.label }));
 
   const DOMAIN_COLORS = [
-    { bg: 'rgb(206, 233, 247)', text: 'rgb(16, 74, 102)' },
-    { bg: 'rgb(195, 235, 230)', text: 'rgb(10, 80, 70)' },
-    { bg: 'rgb(198, 239, 206)', text: 'rgb(0, 82, 33)' },
-    { bg: 'rgb(255, 247, 180)', text: 'rgb(102, 78, 0)' },
     { bg: 'rgb(255, 210, 184)', text: 'rgb(111, 40, 0)' },
-    { bg: 'rgb(255, 198, 198)', text: 'rgb(102, 20, 20)' },
-    { bg: 'rgb(225, 200, 245)', text: 'rgb(70, 20, 100)' },
+    { bg: 'rgb(255, 217, 224)', text: 'rgb(112, 4, 26)' },
+    { bg: 'rgb(241, 211, 243)', text: 'rgb(88, 26, 94)' },
+    { bg: 'rgb(202, 212, 249)', text: 'rgb(13, 37, 103)' },
+    { bg: 'rgb(206, 233, 247)', text: 'rgb(16, 74, 102)' },
+    { bg: 'rgb(193, 232, 215)', text: 'rgb(27, 74, 55)' },
+    { bg: 'rgb(255, 247, 180)', text: 'rgb(102, 78, 0)' },
   ];
 
   const HEADER_COLORS = [
-    { bg: 'rgb(220, 230, 255)', text: 'rgb(30, 50, 130)' },
-    { bg: 'rgb(255, 225, 240)', text: 'rgb(120, 20, 70)' },
-    { bg: 'rgb(220, 255, 230)', text: 'rgb(10, 90, 40)' },
-    { bg: 'rgb(255, 240, 200)', text: 'rgb(110, 70, 0)' },
-    { bg: 'rgb(240, 220, 255)', text: 'rgb(80, 20, 120)' },
+    { bg: 'rgb(254, 234, 140)', text: 'rgb(107, 87, 0)' },
+    { bg: 'rgb(227, 242, 176)', text: 'rgb(79, 101, 15)' },
+    { bg: 'rgb(184, 214, 184)', text: 'rgb(40, 68, 40)' },
+    { bg: 'rgb(161, 220, 195)', text: 'rgb(27, 74, 55)' },
+    { bg: 'rgb(195, 223, 226)', text: 'rgb(38, 76, 80)' },
   ];
 
   return (
@@ -317,22 +317,22 @@ export function MatiereGrid({
                   {activePeriodes.map((p, pi) => {
                     const seqs = cellSequences(d.id, p.id);
                     return (
-                      <td key={p.id} className={`px-2 py-3 align-middle text-center ${pi === 0 ? 'rounded-l-lg' : ''} ${pi === activePeriodes.length - 1 ? 'rounded-r-lg' : ''}`}>
-                        <ul className={`space-y-1 mb-1 min-w-[160px] ${seqs.length > 0 ? 'bg-white rounded px-1.5 py-1' : ''}`}>
+                      <td key={p.id} className={`px-2 py-1 align-top text-center ${pi === 0 ? 'rounded-l-lg' : ''} ${pi === activePeriodes.length - 1 ? 'rounded-r-lg' : ''}`}>
+                        <div className="flex flex-col gap-2 min-w-[160px]">
                           {seqs.map((s) => (
-                            <li key={s.id} className="relative">
+                            <div key={s.id} className="font-bold relative bg-white rounded px-2 min-h-12 flex items-center justify-center">
                               <button
                                 type="button"
                                 data-seq-popover
                                 onClick={() => setActivePopover(activePopover === s.id ? null : s.id)}
-                                className="block w-full text-sm text-blue-700 hover:underline leading-tight"
+                                className="block w-full text-sm text-gray-700 leading-tight"
                               >
                                 {s.titre}
                               </button>
                               {activePopover === s.id && (
                                 <div
                                   data-seq-popover
-                                  className="absolute left-0 top-full mt-0.5 z-20 bg-white border border-gray-200 rounded shadow-md flex items-center gap-0.5 p-0.5"
+                                  className="absolute right-0 top-full mt-0.5 z-20 bg-white border border-gray-200 rounded shadow-md flex items-center gap-0.5 p-0.5"
                                 >
                                   <button
                                     type="button"
@@ -353,17 +353,17 @@ export function MatiereGrid({
                                   </button>
                                 </div>
                               )}
-                            </li>
+                            </div>
                           ))}
-                        </ul>
-                        <button
-                          type="button"
-                          onClick={() => setSlideOver({ periodeId: p.id, domaineId: d.id })}
-                          className="flex items-center justify-center gap-0.5 text-xs text-gray-500 rounded-md px-4 py-1.5 w-full hover:bg-gray-200 hover:text-gray-700 transition-colors"
-                        >
-                          <Plus className="h-3 w-3" />
-                          Ajouter
-                        </button>
+                          <button
+                            type="button"
+                            onClick={() => setSlideOver({ periodeId: p.id, domaineId: d.id })}
+                            className="flex items-center font-bold justify-center gap-0.5 text-sm text-gray-500 rounded-md px-4 h-8 w-full hover:bg-gray-200 hover:text-gray-700 transition-colors"
+                          >
+                            <Plus className="h-3 w-3" />
+                            Ajouter
+                          </button>
+                        </div>
                       </td>
                     );
                   })}

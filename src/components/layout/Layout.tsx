@@ -36,7 +36,7 @@ export function Layout({ children, title, platform }: {
   platform: string | undefined;
 }) {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen" style={{ backgroundColor: 'rgb(245, 246, 248)' }}>
       <LayoutContent title={title} platform={platform}>{children}</LayoutContent>
     </div>
   );
