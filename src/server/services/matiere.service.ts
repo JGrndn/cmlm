@@ -9,7 +9,7 @@ import type {
 import { toMatiereDto, toMatiereListItems } from '@/server/mappers/matiere.mapper';
 
 const LIST_INCLUDE = {
-  domaine: true,
+  discipline: true,
   _count: { select: { sequences: true } },
 } as const;
 
@@ -45,9 +45,9 @@ export class MatiereService {
       where: { id },
       data: {
         titre: input.titre,
-        domaineId: input.domaineId,
+        disciplineId: input.disciplineId,
         periodesVisibles: input.periodesVisibles,
-        sousDomainIdsVisibles: input.sousDomainIdsVisibles,
+        domaineIdsVisibles: input.domaineIdsVisibles,
       },
     });
     return toMatiereDto(row);

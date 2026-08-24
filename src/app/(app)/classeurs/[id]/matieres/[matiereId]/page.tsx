@@ -20,15 +20,15 @@ export default async function MatierePage({
     where: { id: matiereId, classeur: { id, userId: session.user!.id! } },
     include: {
       classeur: { include: { anneeScolaire: true, niveau: true } },
-      domaine: {
+      discipline: {
         include: {
-          sousDomaines: {
+          domaines: {
             where: { matiereId: null },
             orderBy: { label: 'asc' },
           },
         },
       },
-      sousDomaines: { orderBy: { label: 'asc' } },
+      domaines: { orderBy: { label: 'asc' } },
       sequences: {
         orderBy: { ordre: 'asc' },
         include: { _count: { select: { seances: true } } },
@@ -45,9 +45,9 @@ export default async function MatierePage({
 
   const initialSequences = matiere.sequences as unknown as RouterOutputs['sequence']['list'];
 
-  const allSousDomaines = [
-    ...(matiere.domaine?.sousDomaines ?? []),
-    ...matiere.sousDomaines,
+  const allDomaines = [
+    ...(matiere.discipline?.domaines ?? []),
+    ...matiere.domaines,
   ];
 
   return (
@@ -62,22 +62,22 @@ export default async function MatierePage({
 
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">{matiere.titre}</h1>
-        {matiere.domaine && (
-          <p className="text-sm text-gray-500 mt-1">{matiere.domaine.label}</p>
+        {matiere.discipline && (
+          <p className="text-sm text-gray-500 mt-1">{matiere.discipline.label}</p>
         )}
       </div>
 
-      {matiere.domaine && allSousDomaines.length > 0 ? (
+      {matiere.discipline && allDomaines.length > 0 ? (
         <MatiereGrid
           classeurId={id}
           matiereId={matiereId}
-          domaineId={matiere.domaineId!}
+          disciplineId={matiere.disciplineId!}
           anneeScolaireId={matiere.classeur.anneeScolaireId}
-          sousDomaines={allSousDomaines}
+          domaines={allDomaines}
           initialSequences={initialSequences}
           initialPeriodes={periodes}
           initialPeriodesVisibles={matiere.periodesVisibles as string[]}
-          initialSousDomainIdsVisibles={matiere.sousDomainIdsVisibles}
+          initialDomaineIdsVisibles={matiere.domaineIdsVisibles}
         />
       ) : (
         <SequenceList

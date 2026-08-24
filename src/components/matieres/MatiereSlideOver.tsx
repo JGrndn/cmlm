@@ -24,7 +24,7 @@ export function MatiereSlideOver({ classeurId, cycleId, isOpen, onClose, onSucce
     <ResourceSlideOver isOpen={isOpen} onClose={onClose} title="Nouvelle matière" error={createMutation.error}>
       <MatiereForm
         cycleId={cycleId}
-        onSubmit={(data) => createMutation.mutate({ titre: data.titre, classeurId, domaineId: data.domaineId })}
+        onSubmit={(data) => createMutation.mutate({ titre: data.titre, classeurId, disciplineId: data.disciplineId })}
         onCancel={onClose}
         isLoading={createMutation.isPending}
       />

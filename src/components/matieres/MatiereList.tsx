@@ -53,8 +53,8 @@ export function MatiereList({
             ) : (
               <div className="flex-1 min-w-0">
                 <span className="font-medium text-gray-900">{m.titre}</span>
-                {m.domaine && (
-                  <span className="ml-2 text-xs text-gray-400">{m.domaine.label}</span>
+                {m.discipline && (
+                  <span className="ml-2 text-xs text-gray-400">{m.discipline.label}</span>
                 )}
                 <span className="ml-2 text-xs text-gray-400">{m._count.sequences} séquence{m._count.sequences !== 1 ? 's' : ''}</span>
               </div>

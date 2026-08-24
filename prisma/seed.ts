@@ -110,15 +110,15 @@ async function main() {
     });
   }
 
-  // Domaines et sous-domaines — Cycle 1 (BO n°41 du 31 octobre 2024, applicable rentrée 2025)
-  const domainesC1 = [
+  // Disciplines et domaines — Cycle 1 (BO n°41 du 31 octobre 2024, applicable rentrée 2025)
+  const disciplinesC1 = [
     {
       label: 'Le développement et la structuration du langage oral et écrit',
-      sousDomaines: ["L'oral", "L'écrit"],
+      domaines: ["L'oral", "L'écrit"],
     },
     {
       label: "Agir, s'exprimer, comprendre à travers les activités physiques",
-      sousDomaines: [
+      domaines: [
         'Se déplacer',
         'Construire des équilibres',
         "S'exprimer avec son corps",
@@ -127,11 +127,11 @@ async function main() {
     },
     {
       label: "Agir, s'exprimer, comprendre à travers les activités artistiques",
-      sousDomaines: [],
+      domaines: [],
     },
     {
       label: "L'acquisition des premiers outils mathématiques",
-      sousDomaines: [
+      domaines: [
         'Découvrir les nombres',
         'Utiliser les nombres',
         'Explorer les solides et formes planes',
@@ -141,19 +141,19 @@ async function main() {
     },
     {
       label: "Se repérer dans le temps et l'espace",
-      sousDomaines: [],
+      domaines: [],
     },
     {
       label: 'Découvrir le monde du vivant, de la matière et des objets',
-      sousDomaines: [],
+      domaines: [],
     },
   ];
 
-  // Domaines et sous-domaines — Cycle 2
-  const domainesC2 = [
+  // Disciplines et domaines — Cycle 2
+  const disciplinesC2 = [
     {
       label: 'Français',
-      sousDomaines: [
+      domaines: [
         'Langage oral',
         'Lecture et compréhension de l\'écrit',
         'Écriture',
@@ -163,26 +163,26 @@ async function main() {
     },
     {
       label: 'Mathématiques',
-      sousDomaines: [
+      domaines: [
         'Nombres et calculs',
         'Grandeurs et mesures',
         'Espace et géométrie',
       ],
     },
-    { label: 'Enseignement moral et civique', sousDomaines: [] },
-    { label: 'Histoire-géographie', sousDomaines: ['Histoire', 'Géographie'] },
-    { label: 'Sciences et technologie', sousDomaines: [] },
-    { label: 'Arts plastiques', sousDomaines: [] },
-    { label: 'Éducation musicale', sousDomaines: [] },
-    { label: 'Éducation physique et sportive', sousDomaines: [] },
-    { label: 'Enseignements à dominante langagière', sousDomaines: [] },
+    { label: 'Enseignement moral et civique', domaines: [] },
+    { label: 'Histoire-géographie', domaines: ['Histoire', 'Géographie'] },
+    { label: 'Sciences et technologie', domaines: [] },
+    { label: 'Arts plastiques', domaines: [] },
+    { label: 'Éducation musicale', domaines: [] },
+    { label: 'Éducation physique et sportive', domaines: [] },
+    { label: 'Enseignements à dominante langagière', domaines: [] },
   ];
 
-  // Domaines et sous-domaines — Cycle 3 (même structure + approfondissement)
-  const domainesC3 = [
+  // Disciplines et domaines — Cycle 3 (même structure + approfondissement)
+  const disciplinesC3 = [
     {
       label: 'Français',
-      sousDomaines: [
+      domaines: [
         'Langage oral',
         'Lecture et compréhension de l\'écrit',
         'Écriture',
@@ -192,49 +192,49 @@ async function main() {
     },
     {
       label: 'Mathématiques',
-      sousDomaines: [
+      domaines: [
         'Nombres et calculs',
         'Grandeurs et mesures',
         'Espace et géométrie',
       ],
     },
-    { label: 'Enseignement moral et civique', sousDomaines: [] },
-    { label: 'Histoire-géographie', sousDomaines: ['Histoire', 'Géographie'] },
+    { label: 'Enseignement moral et civique', domaines: [] },
+    { label: 'Histoire-géographie', domaines: ['Histoire', 'Géographie'] },
     {
       label: 'Sciences et technologie',
-      sousDomaines: [
+      domaines: [
         'Matière, mouvement, énergie, information',
         'Le vivant, sa diversité et les fonctions qui le caractérisent',
         'Matériaux et objets techniques',
         'La planète Terre, les êtres vivants dans leur environnement',
       ],
     },
-    { label: 'Arts plastiques', sousDomaines: [] },
-    { label: 'Éducation musicale', sousDomaines: [] },
-    { label: 'Éducation physique et sportive', sousDomaines: [] },
-    { label: 'Langue vivante étrangère ou régionale', sousDomaines: [] },
+    { label: 'Arts plastiques', domaines: [] },
+    { label: 'Éducation musicale', domaines: [] },
+    { label: 'Éducation physique et sportive', domaines: [] },
+    { label: 'Langue vivante étrangère ou régionale', domaines: [] },
   ];
 
-  const seedDomaines = async (cycleId: string, domaines: typeof domainesC1) => {
-    for (const d of domaines) {
-      const domaine = await prisma.domaine.upsert({
+  const seedDisciplines = async (cycleId: string, disciplines: typeof disciplinesC1) => {
+    for (const d of disciplines) {
+      const discipline = await prisma.discipline.upsert({
         where: { id: `${cycleId}-${d.label}` },
         update: {},
         create: { id: `${cycleId}-${d.label}`, label: d.label, cycleId },
       });
-      for (const sdLabel of d.sousDomaines) {
-        await prisma.sousDomaine.upsert({
-          where: { id: `${domaine.id}-${sdLabel}` },
+      for (const domaineLabel of d.domaines) {
+        await prisma.domaine.upsert({
+          where: { id: `${discipline.id}-${domaineLabel}` },
           update: {},
-          create: { id: `${domaine.id}-${sdLabel}`, label: sdLabel, domaineId: domaine.id },
+          create: { id: `${discipline.id}-${domaineLabel}`, label: domaineLabel, disciplineId: discipline.id },
         });
       }
     }
   };
 
-  await seedDomaines(cycle1.id, domainesC1);
-  await seedDomaines(cycle2.id, domainesC2);
-  await seedDomaines(cycle3.id, domainesC3);
+  await seedDisciplines(cycle1.id, disciplinesC1);
+  await seedDisciplines(cycle2.id, disciplinesC2);
+  await seedDisciplines(cycle3.id, disciplinesC3);
 
   console.log('Seed terminé.');
 }

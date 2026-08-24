@@ -1,4 +1,4 @@
-export interface DomaineDto {
+export interface DisciplineDto {
   id: string;
   label: string;
 }
@@ -8,31 +8,31 @@ export interface MatiereDto {
   titre: string;
   ordre: number;
   classeurId: string;
-  domaineId: string | null;
+  disciplineId: string | null;
   periodesVisibles: string[];
-  sousDomainIdsVisibles: string[];
+  domaineIdsVisibles: string[];
   createdAt: Date;
   updatedAt: Date;
 }
 
 export interface MatiereListItemDto extends MatiereDto {
-  domaine: DomaineDto | null;
+  discipline: DisciplineDto | null;
   _count: { sequences: number };
 }
 
 export interface MatiereInClasseurDto extends MatiereDto {
-  domaine: DomaineDto | null;
+  discipline: DisciplineDto | null;
 }
 
 export interface CreateMatiereInput {
   titre: string;
   classeurId: string;
-  domaineId?: string;
+  disciplineId?: string;
 }
 
 export interface UpdateMatiereInput {
   titre?: string;
-  domaineId?: string | null;
+  disciplineId?: string | null;
   periodesVisibles?: string[];
-  sousDomainIdsVisibles?: string[];
+  domaineIdsVisibles?: string[];
 }

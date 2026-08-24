@@ -14,7 +14,7 @@ export const matiereRouter = createTRPCRouter({
       z.object({
         titre: z.string().min(1),
         classeurId: z.string(),
-        domaineId: z.string().optional(),
+        disciplineId: z.string().optional(),
       }),
     )
     .mutation(({ ctx, input }) =>
@@ -26,9 +26,9 @@ export const matiereRouter = createTRPCRouter({
       z.object({
         id: z.string(),
         titre: z.string().min(1).optional(),
-        domaineId: z.string().nullable().optional(),
+        disciplineId: z.string().nullable().optional(),
         periodesVisibles: z.array(z.string()).optional(),
-        sousDomainIdsVisibles: z.array(z.string()).optional(),
+        domaineIdsVisibles: z.array(z.string()).optional(),
       }),
     )
     .mutation(({ ctx, input }) => {

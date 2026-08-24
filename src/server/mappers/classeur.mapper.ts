@@ -18,7 +18,7 @@ export type PrismaClasseurDetail = Prisma.ClasseurGetPayload<{
   include: {
     niveau: { include: { cycle: true } };
     anneeScolaire: true;
-    matieres: { include: { domaine: true } };
+    matieres: { include: { discipline: true } };
   };
 }>;
 
@@ -76,12 +76,12 @@ export function toClasseurDetail(raw: PrismaClasseurDetail): ClasseurDetailDto {
         titre: m.titre,
         ordre: m.ordre,
         classeurId: m.classeurId,
-        domaineId: m.domaineId,
+        disciplineId: m.disciplineId,
         periodesVisibles: m.periodesVisibles as string[],
-        sousDomainIdsVisibles: m.sousDomainIdsVisibles,
+        domaineIdsVisibles: m.domaineIdsVisibles,
         createdAt: m.createdAt,
         updatedAt: m.updatedAt,
-        domaine: m.domaine ? { id: m.domaine.id, label: m.domaine.label } : null,
+        discipline: m.discipline ? { id: m.discipline.id, label: m.discipline.label } : null,
       }),
     ),
   };

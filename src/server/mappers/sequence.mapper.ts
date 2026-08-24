@@ -18,7 +18,7 @@ export function toSequenceDto(raw: PrismaSequenceWithPeriode): SequenceDto {
     titre: raw.titre,
     ordre: raw.ordre,
     matiereId: raw.matiereId,
-    sousDomainId: raw.sousDomainId,
+    domaineId: raw.domaineId,
     periodeId: raw.periodeId,
     periodeLabel: raw.periode?.label ?? null,
     objectifs: raw.objectifs,

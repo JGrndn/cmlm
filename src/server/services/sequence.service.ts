@@ -47,7 +47,7 @@ export class SequenceService {
       data: {
         titre: input.titre,
         matiereId: input.matiereId,
-        sousDomainId: input.sousDomainId,
+        domaineId: input.domaineId,
         periodeId: input.periodeId,
         objectifs: input.objectifs,
         ordre: count + 1,
@@ -63,7 +63,7 @@ export class SequenceService {
       where: { id },
       data: {
         titre: input.titre,
-        sousDomainId: input.sousDomainId,
+        domaineId: input.domaineId,
         periodeId: input.periodeId,
         objectifs: input.objectifs,
       },

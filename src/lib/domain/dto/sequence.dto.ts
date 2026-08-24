@@ -3,7 +3,7 @@ export interface SequenceDto {
   titre: string;
   ordre: number;
   matiereId: string;
-  sousDomainId: string | null;
+  domaineId: string | null;
   periodeId: string | null;
   periodeLabel: string | null;
   objectifs: string | null;
@@ -18,14 +18,14 @@ export interface SequenceListItemDto extends SequenceDto {
 export interface CreateSequenceInput {
   titre: string;
   matiereId: string;
-  sousDomainId?: string;
+  domaineId?: string;
   periodeId?: string;
   objectifs?: string;
 }
 
 export interface UpdateSequenceInput {
   titre?: string;
-  sousDomainId?: string | null;
+  domaineId?: string | null;
   periodeId?: string | null;
   objectifs?: string | null;
 }

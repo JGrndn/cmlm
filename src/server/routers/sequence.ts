@@ -14,7 +14,7 @@ export const sequenceRouter = createTRPCRouter({
       z.object({
         titre: z.string().min(1),
         matiereId: z.string(),
-        sousDomainId: z.string().optional(),
+        domaineId: z.string().optional(),
         periodeId: z.string().optional(),
         objectifs: z.string().optional(),
       }),
@@ -28,7 +28,7 @@ export const sequenceRouter = createTRPCRouter({
       z.object({
         id: z.string(),
         titre: z.string().min(1).optional(),
-        sousDomainId: z.string().nullable().optional(),
+        domaineId: z.string().nullable().optional(),
         periodeId: z.string().nullable().optional(),
         objectifs: z.string().nullable().optional(),
       }),

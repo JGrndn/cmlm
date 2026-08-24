@@ -23,7 +23,7 @@ export default async function ClasseurPage({
       matieres: {
         orderBy: { ordre: 'asc' },
         include: {
-          domaine: true,
+          discipline: true,
           _count: { select: { sequences: true } },
         },
       },

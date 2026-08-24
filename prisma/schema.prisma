@@ -22,11 +22,11 @@ model User {
 }
 
 model Cycle {
-  id       String           @id @default(cuid())
-  code     String           @unique
-  label    String
-  domaines Domaine[]
-  niveaux  NiveauScolaire[]
+  id          String           @id @default(cuid())
+  code        String           @unique
+  label       String
+  disciplines Discipline[]
+  niveaux     NiveauScolaire[]
 
   @@map("cycles")
 }
@@ -66,27 +66,27 @@ model Periode {
   @@map("periodes")
 }
 
-model Domaine {
-  id           String        @id @default(cuid())
-  label        String
-  cycleId      String
-  cycle        Cycle         @relation(fields: [cycleId], references: [id])
-  sousDomaines SousDomaine[]
-  matieres     Matiere[]
+model Discipline {
+  id       String    @id @default(cuid())
+  label    String
+  cycleId  String
+  cycle    Cycle     @relation(fields: [cycleId], references: [id])
+  domaines Domaine[]
+  matieres Matiere[]
 
-  @@map("domaines")
+  @@map("disciplines")
 }
 
-model SousDomaine {
-  id        String     @id @default(cuid())
-  label     String
-  domaineId String
-  matiereId String?
-  domaine   Domaine    @relation(fields: [domaineId], references: [id])
-  matiere   Matiere?   @relation(fields: [matiereId], references: [id])
-  sequences Sequence[]
+model Domaine {
+  id           String     @id @default(cuid())
+  label        String
+  disciplineId String
+  matiereId    String?
+  discipline   Discipline @relation(fields: [disciplineId], references: [id])
+  matiere      Matiere?   @relation(fields: [matiereId], references: [id])
+  sequences    Sequence[]
 
-  @@map("sous_domaines")
+  @@map("domaines")
 }
 
 model Classeur {
@@ -106,37 +106,37 @@ model Classeur {
 }
 
 model Matiere {
-  id                    String     @id @default(cuid())
-  titre                 String
-  classeurId            String
-  domaineId             String?
-  periodesVisibles      String[]
-  sousDomainIdsVisibles String[]
-  ordre                 Int
-  createdAt             DateTime   @default(now())
-  updatedAt             DateTime   @updatedAt
-  classeur              Classeur   @relation(fields: [classeurId], references: [id], onDelete: Cascade)
-  domaine               Domaine?   @relation(fields: [domaineId], references: [id])
-  sousDomaines          SousDomaine[]
-  sequences             Sequence[]
+  id                  String      @id @default(cuid())
+  titre               String
+  classeurId          String
+  disciplineId        String?
+  periodesVisibles    String[]
+  domaineIdsVisibles  String[]
+  ordre               Int
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+  classeur            Classeur    @relation(fields: [classeurId], references: [id], onDelete: Cascade)
+  discipline          Discipline? @relation(fields: [disciplineId], references: [id])
+  domaines            Domaine[]
+  sequences           Sequence[]
 
   @@map("matieres")
 }
 
 model Sequence {
-  id            String       @id @default(cuid())
-  titre         String
-  matiereId     String
-  sousDomainId  String?
-  periodeId     String?
-  objectifs     String?
-  ordre         Int
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-  seances       Seance[]
-  matiere       Matiere      @relation(fields: [matiereId], references: [id], onDelete: Cascade)
-  sousDomaine   SousDomaine? @relation(fields: [sousDomainId], references: [id], onDelete: SetNull)
-  periode       Periode?     @relation(fields: [periodeId], references: [id], onDelete: SetNull)
+  id         String    @id @default(cuid())
+  titre      String
+  matiereId  String
+  domaineId  String?
+  periodeId  String?
+  objectifs  String?
+  ordre      Int
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  seances    Seance[]
+  matiere    Matiere   @relation(fields: [matiereId], references: [id], onDelete: Cascade)
+  domaine    Domaine?  @relation(fields: [domaineId], references: [id], onDelete: SetNull)
+  periode    Periode?  @relation(fields: [periodeId], references: [id], onDelete: SetNull)
 
   @@map("sequences")
 }

@@ -7,7 +7,7 @@ import { trpc } from '@/lib/trpc/client';
 
 interface MatiereFormData {
   titre: string;
-  domaineId?: string;
+  disciplineId?: string;
 }
 
 interface MatiereFormProps {
@@ -20,9 +20,9 @@ interface MatiereFormProps {
 export function MatiereForm({ cycleId, onSubmit, onCancel, isLoading }: MatiereFormProps) {
   const [formData, setFormData] = useState<MatiereFormData>({ titre: '' });
 
-  const { data: domaines = [] } = trpc.reference.listDomaines.useQuery({ cycleId });
+  const { data: disciplines = [] } = trpc.reference.listDisciplines.useQuery({ cycleId });
 
-  const domaineOptions = domaines.map((d) => ({ value: d.id, label: d.label }));
+  const disciplineOptions = disciplines.map((d) => ({ value: d.id, label: d.label }));
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,13 +41,13 @@ export function MatiereForm({ cycleId, onSubmit, onCancel, isLoading }: MatiereF
         required
       />
       <FormField
-        label="Domaine"
-        name="domaineId"
+        label="Discipline"
+        name="disciplineId"
         type="select"
-        value={formData.domaineId ?? ''}
-        onChange={(v) => setFormData((prev) => ({ ...prev, domaineId: v || undefined }))}
-        placeholder="— Aucun domaine —"
-        options={domaineOptions}
+        value={formData.disciplineId ?? ''}
+        onChange={(v) => setFormData((prev) => ({ ...prev, disciplineId: v || undefined }))}
+        placeholder="— Aucune discipline —"
+        options={disciplineOptions}
       />
     </GenericForm>
   );
