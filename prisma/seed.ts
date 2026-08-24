@@ -61,36 +61,38 @@ async function main() {
   // Périodes par année scolaire (dates académiques françaises approximatives)
   const periodeDates: Record<string, { label: string; dateDebut: Date; dateFin: Date }[]> = {
     '2024-2025': [
-      { label: 'P1', dateDebut: new Date('2024-09-02'), dateFin: new Date('2024-10-18') },
-      { label: 'P2', dateDebut: new Date('2024-11-04'), dateFin: new Date('2024-12-20') },
-      { label: 'P3', dateDebut: new Date('2025-01-06'), dateFin: new Date('2025-02-14') },
-      { label: 'P4', dateDebut: new Date('2025-03-03'), dateFin: new Date('2025-04-18') },
-      { label: 'P5', dateDebut: new Date('2025-04-28'), dateFin: new Date('2025-07-04') },
+      { label: 'Période 1', dateDebut: new Date('2024-09-02'), dateFin: new Date('2024-10-18') },
+      { label: 'Période 2', dateDebut: new Date('2024-11-04'), dateFin: new Date('2024-12-20') },
+      { label: 'Période 3', dateDebut: new Date('2025-01-06'), dateFin: new Date('2025-02-14') },
+      { label: 'Période 4', dateDebut: new Date('2025-03-03'), dateFin: new Date('2025-04-18') },
+      { label: 'Période 5', dateDebut: new Date('2025-04-28'), dateFin: new Date('2025-07-04') },
     ],
     '2025-2026': [
-      { label: 'P1', dateDebut: new Date('2025-09-02'), dateFin: new Date('2025-10-17') },
-      { label: 'P2', dateDebut: new Date('2025-11-03'), dateFin: new Date('2025-12-19') },
-      { label: 'P3', dateDebut: new Date('2026-01-05'), dateFin: new Date('2026-02-13') },
-      { label: 'P4', dateDebut: new Date('2026-03-02'), dateFin: new Date('2026-04-17') },
-      { label: 'P5', dateDebut: new Date('2026-04-27'), dateFin: new Date('2026-07-03') },
+      { label: 'Période 1', dateDebut: new Date('2025-09-02'), dateFin: new Date('2025-10-17') },
+      { label: 'Période 2', dateDebut: new Date('2025-11-03'), dateFin: new Date('2025-12-19') },
+      { label: 'Période 3', dateDebut: new Date('2026-01-05'), dateFin: new Date('2026-02-13') },
+      { label: 'Période 4', dateDebut: new Date('2026-03-02'), dateFin: new Date('2026-04-17') },
+      { label: 'Période 5', dateDebut: new Date('2026-04-27'), dateFin: new Date('2026-07-03') },
     ],
     '2026-2027': [
-      { label: 'P1', dateDebut: new Date('2026-09-01'), dateFin: new Date('2026-10-23') },
-      { label: 'P2', dateDebut: new Date('2026-11-09'), dateFin: new Date('2026-12-18') },
-      { label: 'P3', dateDebut: new Date('2027-01-04'), dateFin: new Date('2027-02-12') },
-      { label: 'P4', dateDebut: new Date('2027-03-01'), dateFin: new Date('2027-04-16') },
-      { label: 'P5', dateDebut: new Date('2027-04-26'), dateFin: new Date('2027-07-02') },
+      { label: 'Période 1', dateDebut: new Date('2026-09-01'), dateFin: new Date('2026-10-23') },
+      { label: 'Période 2', dateDebut: new Date('2026-11-09'), dateFin: new Date('2026-12-18') },
+      { label: 'Période 3', dateDebut: new Date('2027-01-04'), dateFin: new Date('2027-02-12') },
+      { label: 'Période 4', dateDebut: new Date('2027-03-01'), dateFin: new Date('2027-04-16') },
+      { label: 'Période 5', dateDebut: new Date('2027-04-26'), dateFin: new Date('2027-07-02') },
     ],
   };
 
   for (const [anneeLabel, periodes] of Object.entries(periodeDates)) {
     const annee = await prisma.anneeScolaire.findUnique({ where: { label: anneeLabel } });
     if (!annee) continue;
-    for (const p of periodes) {
+    for (let i = 0; i < periodes.length; i++) {
+      const p = periodes[i];
+      const key = `P${i + 1}`;
       await db.periode.upsert({
-        where: { id: `${anneeLabel}-${p.label}` },
-        update: {},
-        create: { id: `${anneeLabel}-${p.label}`, ...p, anneeScolaireId: annee.id },
+        where: { id: `${anneeLabel}-${key}` },
+        update: { label: p.label },
+        create: { id: `${anneeLabel}-${key}`, ...p, anneeScolaireId: annee.id },
       });
     }
   }

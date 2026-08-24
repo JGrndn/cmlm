@@ -51,7 +51,7 @@ export default async function MatierePage({
   ];
 
   return (
-    <main className="p-6 max-w-5xl mx-auto">
+    <main className="p-6">
       <Breadcrumb
         items={[
           { label: 'Mes classeurs', href: '/classeurs' },
