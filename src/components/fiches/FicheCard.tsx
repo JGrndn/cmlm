@@ -72,7 +72,7 @@ export function FicheCard({ fiche, disciplineOptions, domaineOptions, sousDomain
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+    <div id={`fiche-${fiche.id}`} className="bg-white border border-gray-200 rounded-lg overflow-hidden">
       <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 border-b border-gray-200">
         <input
           type="text"
@@ -177,7 +177,7 @@ export function FicheCard({ fiche, disciplineOptions, domaineOptions, sousDomain
               type="button"
               onClick={() => createPhase.mutate({ ficheId: fiche.id })}
               disabled={createPhase.isPending}
-              className="mt-2 flex items-center gap-1.5 text-sm text-blue-700 hover:text-blue-900 py-1"
+              className="mt-3 flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 hover:border-blue-400 transition-colors disabled:opacity-50"
             >
               <Plus className="h-3.5 w-3.5" /> Ajouter une phase
             </button>

@@ -267,7 +267,7 @@ export function PhaseEditor({ phase }: { phase: Phase; ficheId?: string }) {
   useEffect(() => () => { if (saveTimeout.current) clearTimeout(saveTimeout.current); }, []);
 
   return (
-    <div className="group bg-gray-50 rounded-md border border-gray-200 overflow-hidden">
+    <div id={`phase-${phase.id}`} className="group bg-gray-50 rounded-md border border-gray-200 overflow-hidden">
       {/* Header row 1: titre + delete */}
       <div className="flex items-center gap-2 px-3 py-2 bg-white border-b border-gray-100">
         <input

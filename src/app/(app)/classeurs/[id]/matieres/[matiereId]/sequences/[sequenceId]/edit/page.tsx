@@ -3,6 +3,7 @@ import { redirect, notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
 import { SequenceEditor } from '@/components/sequences/SequenceEditor';
+import { SequenceSidebar } from '@/components/sequences/SequenceSidebar';
 
 export default async function SequenceEditPage({
   params,
@@ -137,7 +138,7 @@ export default async function SequenceEditPage({
   };
 
   return (
-    <main className="p-6 max-w-5xl mx-auto">
+    <main className="w-full">
       <Breadcrumb
         items={[
           { label: 'Mes classeurs', href: '/classeurs' },
@@ -148,17 +149,31 @@ export default async function SequenceEditPage({
         ]}
       />
 
-      <div className="mb-6">
+      <div id="sequence-top" className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Modifier la séquence</h1>
       </div>
 
-      <SequenceEditor
-        sequenceId={sequenceId}
-        classeurId={id}
-        matiereId={matiereId}
-        initialData={initialData}
-        referenceTree={referenceTree}
-      />
+      <div className="flex gap-4 items-start">
+        <SequenceSidebar
+          sequenceId={sequenceId}
+          sequenceTitre={sequence.titre}
+          initialFiches={initialData.fiches.map((f) => ({
+            id: f.id,
+            titre: f.titre,
+            phases: f.phases.map((p) => ({ id: p.id, titre: p.titre })),
+          }))}
+        />
+
+        <div className="flex-1 min-w-0">
+          <SequenceEditor
+            sequenceId={sequenceId}
+            classeurId={id}
+            matiereId={matiereId}
+            initialData={initialData}
+            referenceTree={referenceTree}
+          />
+        </div>
+      </div>
     </main>
   );
 }
