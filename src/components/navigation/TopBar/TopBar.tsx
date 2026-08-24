@@ -35,10 +35,10 @@ export function TopBar({ title, platform }: { title: string; platform: string | 
   }, [isOpen]);
 
   return (
-    <header className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-blue-900 text-white flex items-center justify-between px-4 shadow-lg z-30">
+    <header className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-menu text-white flex items-center justify-between px-4 shadow-lg z-30">
       <button
         onClick={toggleMobile}
-        className="p-2 rounded-lg hover:bg-blue-800 transition-colors"
+        className="p-2 rounded-lg hover:bg-menu-hover transition-colors"
         aria-label="Ouvrir le menu"
       >
         <Menu className="w-6 h-6" />

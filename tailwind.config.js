@@ -7,6 +7,12 @@ module.exports = {
   ],
   theme: {
     extend: {
+      colors: {
+        menu: {
+          DEFAULT: '#000F44',
+          hover: '#001566',
+        },
+      },
       keyframes: {
         'fade-in': { from: { opacity: '0' }, to: { opacity: '1' } },
         'slide-in': { from: { transform: 'translateX(-100%)' }, to: { transform: 'translateX(0)' } },

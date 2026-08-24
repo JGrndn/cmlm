@@ -15,12 +15,12 @@ export function MobileSideBar({ title }: { title: string }) {
         onClick={closeMobile}
       />
 
-      <aside className="fixed left-0 top-0 h-full w-64 bg-blue-900 text-white z-50 lg:hidden shadow-2xl animate-slide-in">
-        <div className="h-16 flex items-center justify-between px-4 border-b border-blue-800">
+      <aside className="fixed left-0 top-0 h-full w-64 bg-menu text-white z-50 lg:hidden shadow-2xl animate-slide-in">
+        <div className="h-16 flex items-center justify-between px-4 border-b border-menu-hover">
           <span className="text-xl font-bold">{title}</span>
           <button
             onClick={closeMobile}
-            className="p-2 rounded-lg hover:bg-blue-800 transition-colors"
+            className="p-2 rounded-lg hover:bg-menu-hover transition-colors"
             aria-label="Fermer le menu"
           >
             <X className="w-5 h-5" />

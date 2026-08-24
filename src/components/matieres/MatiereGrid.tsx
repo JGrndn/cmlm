@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { trpc } from '@/lib/trpc/client';
 import type { RouterOutputs } from '@/lib/trpc/types';
-import { Plus, ChevronDown, Trash2 } from 'lucide-react';
+import { Plus, ChevronDown, Trash2, Pencil } from 'lucide-react';
 import { SequenceSlideOver } from '@/components/sequences/SequenceSlideOver';
 
 type Sequence = RouterOutputs['sequence']['list'][0];
@@ -52,6 +52,8 @@ export function MatiereGrid({
   );
   const [dropdownOpen, setDropdownOpen] = useState<'domaines' | 'periodes' | null>(null);
   const [slideOver, setSlideOver] = useState<{ periodeId: string; domaineId: string } | null>(null);
+  const [activePopover, setActivePopover] = useState<string | null>(null);
+  const [editingSequence, setEditingSequence] = useState<Sequence | null>(null);
   const [isAddingD, setIsAddingD] = useState(false);
   const [newDLabel, setNewDLabel] = useState('');
   const dDropdownRef = useRef<HTMLDivElement>(null);
@@ -80,6 +82,10 @@ export function MatiereGrid({
     },
   });
 
+  const deleteSeqMutation = trpc.sequence.delete.useMutation({
+    onSuccess: () => utils.sequence.list.invalidate(),
+  });
+
   const { data: sequences = initialSequences } = trpc.sequence.list.useQuery(
     { matiereId },
     { initialData: initialSequences },
@@ -87,6 +93,9 @@ export function MatiereGrid({
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
+      if (!(e.target as Element).closest('[data-seq-popover]')) {
+        setActivePopover(null);
+      }
       if (
         dDropdownRef.current && !dDropdownRef.current.contains(e.target as Node) &&
         pDropdownRef.current && !pDropdownRef.current.contains(e.target as Node)
@@ -130,6 +139,12 @@ export function MatiereGrid({
       return next;
     });
   };
+
+  function handleDeleteSequence(id: string) {
+    if (!confirm('Supprimer cette séquence ?')) return;
+    deleteSeqMutation.mutate({ id });
+    setActivePopover(null);
+  }
 
   const visibleDomaines = allDomaines.filter((s) => visibleIds.has(s.id));
   const activePeriodes = allPeriodes.filter((p) => visiblePeriodes.has(p.id));
@@ -284,13 +299,39 @@ export function MatiereGrid({
                       <td key={p.id} className="px-2 py-2 border border-gray-200 align-top">
                         <ul className="space-y-1 mb-1">
                           {seqs.map((s) => (
-                            <li key={s.id}>
-                              <a
-                                href={`/classeurs/${classeurId}/matieres/${matiereId}/sequences/${s.id}`}
-                                className="block text-xs text-blue-700 hover:underline leading-tight"
+                            <li key={s.id} className="relative">
+                              <button
+                                type="button"
+                                data-seq-popover
+                                onClick={() => setActivePopover(activePopover === s.id ? null : s.id)}
+                                className="block w-full text-left text-xs text-blue-700 hover:underline leading-tight"
                               >
                                 {s.titre}
-                              </a>
+                              </button>
+                              {activePopover === s.id && (
+                                <div
+                                  data-seq-popover
+                                  className="absolute left-0 top-full mt-0.5 z-20 bg-white border border-gray-200 rounded shadow-md flex items-center gap-0.5 p-0.5"
+                                >
+                                  <button
+                                    type="button"
+                                    title="Modifier"
+                                    onClick={() => { setActivePopover(null); setEditingSequence(s); }}
+                                    className="p-1 text-gray-500 hover:text-blue-600 rounded"
+                                  >
+                                    <Pencil className="h-3.5 w-3.5" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    title="Supprimer"
+                                    onClick={() => handleDeleteSequence(s.id)}
+                                    disabled={deleteSeqMutation.isPending}
+                                    className="p-1 text-gray-500 hover:text-red-500 rounded"
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </button>
+                                </div>
+                              )}
                             </li>
                           ))}
                         </ul>
@@ -331,6 +372,17 @@ export function MatiereGrid({
           defaultPeriodeId={slideOver.periodeId}
           defaultDomaineId={slideOver.domaineId}
           periodeOptions={periodeOptions}
+        />
+      )}
+
+      {editingSequence && (
+        <SequenceSlideOver
+          matiereId={matiereId}
+          isOpen
+          onClose={() => setEditingSequence(null)}
+          onSuccess={() => utils.sequence.list.invalidate()}
+          periodeOptions={periodeOptions}
+          sequence={editingSequence}
         />
       )}
     </div>

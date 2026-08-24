@@ -16,13 +16,15 @@ interface SequenceFormProps {
   isLoading?: boolean;
   defaultPeriodeId?: string;
   periodeOptions?: { value: string; label: string }[];
+  initialValues?: Partial<SequenceFormData>;
+  submitLabel?: string;
 }
 
-export function SequenceForm({ onSubmit, onCancel, isLoading, defaultPeriodeId, periodeOptions = [] }: SequenceFormProps) {
+export function SequenceForm({ onSubmit, onCancel, isLoading, defaultPeriodeId, periodeOptions = [], initialValues, submitLabel }: SequenceFormProps) {
   const [formData, setFormData] = useState<SequenceFormData>({
-    titre: '',
-    periodeId: defaultPeriodeId ?? '',
-    objectifs: '',
+    titre: initialValues?.titre ?? '',
+    periodeId: initialValues?.periodeId ?? defaultPeriodeId ?? '',
+    objectifs: initialValues?.objectifs ?? '',
   });
 
   function updateField<K extends keyof SequenceFormData>(field: K, value: SequenceFormData[K]) {
@@ -35,7 +37,7 @@ export function SequenceForm({ onSubmit, onCancel, isLoading, defaultPeriodeId, 
   };
 
   return (
-    <GenericForm onSubmit={handleSubmit} onCancel={onCancel} isLoading={isLoading} submitLabel="Créer">
+    <GenericForm onSubmit={handleSubmit} onCancel={onCancel} isLoading={isLoading} submitLabel={submitLabel ?? 'Créer'}>
       <FormField
         label="Titre"
         name="titre"
