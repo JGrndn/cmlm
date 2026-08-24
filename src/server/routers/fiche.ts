@@ -1,94 +1,54 @@
 import { z } from 'zod';
-import { TRPCError } from '@trpc/server';
-import { createTRPCRouter, protectedProcedure } from '@/server/trpc';
-import { prisma as _db } from '@/lib/prisma';
+import { createTRPCRouter, protectedProcedure, mapDomainError } from '@/server/trpc';
+import { ficheService } from '@/server/services';
 
-type Db = typeof _db;
-
-async function assertFicheOwner(prisma: Db, ficheId: string, userId: string) {
-  const fiche = await prisma.fiche.findFirst({
-    where: { id: ficheId, seance: { sequence: { matiere: { classeur: { userId } } } } },
-  });
-  if (!fiche) throw new TRPCError({ code: 'NOT_FOUND' });
-  return fiche;
-}
+const idsArray = z.array(z.string()).optional();
 
 export const ficheRouter = createTRPCRouter({
   list: protectedProcedure
-    .input(z.object({ seanceId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const seance = await ctx.prisma.seance.findFirst({
-        where: {
-          id: input.seanceId,
-          sequence: { matiere: { classeur: { userId: ctx.session.user.id } } },
-        },
-      });
-      if (!seance) throw new TRPCError({ code: 'NOT_FOUND' });
-
-      return ctx.prisma.fiche.findMany({
-        where: { seanceId: input.seanceId },
-        orderBy: { ordre: 'asc' },
-        include: { items: { orderBy: { ordre: 'asc' } } },
-      });
-    }),
+    .input(z.object({ sequenceId: z.string() }))
+    .query(({ ctx, input }) =>
+      ficheService(ctx.prisma).list(input.sequenceId, ctx.session.user.id).catch(mapDomainError),
+    ),
 
   getById: protectedProcedure
     .input(z.object({ id: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const fiche = await ctx.prisma.fiche.findFirst({
-        where: {
-          id: input.id,
-          seance: { sequence: { matiere: { classeur: { userId: ctx.session.user.id } } } },
-        },
-        include: { items: { orderBy: { ordre: 'asc' } } },
-      });
-      if (!fiche) throw new TRPCError({ code: 'NOT_FOUND' });
-      return fiche;
-    }),
+    .query(({ ctx, input }) =>
+      ficheService(ctx.prisma).getById(input.id, ctx.session.user.id).catch(mapDomainError),
+    ),
 
   create: protectedProcedure
-    .input(z.object({ titre: z.string().min(1), seanceId: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      const seance = await ctx.prisma.seance.findFirst({
-        where: {
-          id: input.seanceId,
-          sequence: { matiere: { classeur: { userId: ctx.session.user.id } } },
-        },
-      });
-      if (!seance) throw new TRPCError({ code: 'NOT_FOUND' });
-
-      const count = await ctx.prisma.fiche.count({ where: { seanceId: input.seanceId } });
-      return ctx.prisma.fiche.create({ data: { ...input, ordre: count + 1 } });
-    }),
+    .input(z.object({ titre: z.string().min(1), sequenceId: z.string() }))
+    .mutation(({ ctx, input }) =>
+      ficheService(ctx.prisma).create(input, ctx.session.user.id).catch(mapDomainError),
+    ),
 
   update: protectedProcedure
-    .input(z.object({ id: z.string(), titre: z.string().min(1) }))
-    .mutation(async ({ ctx, input }) => {
+    .input(
+      z.object({
+        id: z.string(),
+        titre: z.string().min(1).optional(),
+        objectifs: z.string().nullable().optional(),
+        materiels: z.array(z.string()).optional(),
+        disciplineIds: idsArray,
+        domaineIds: idsArray,
+        sousDomainIds: idsArray,
+      }),
+    )
+    .mutation(({ ctx, input }) => {
       const { id, ...data } = input;
-      await assertFicheOwner(ctx.prisma, id, ctx.session.user.id);
-      return ctx.prisma.fiche.update({ where: { id }, data });
+      return ficheService(ctx.prisma).update(id, data, ctx.session.user.id).catch(mapDomainError);
     }),
 
   delete: protectedProcedure
     .input(z.object({ id: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      await assertFicheOwner(ctx.prisma, input.id, ctx.session.user.id);
-      return ctx.prisma.fiche.delete({ where: { id: input.id } });
-    }),
+    .mutation(({ ctx, input }) =>
+      ficheService(ctx.prisma).delete(input.id, ctx.session.user.id).catch(mapDomainError),
+    ),
 
   reorder: protectedProcedure
     .input(z.object({ ids: z.array(z.string()) }))
-    .mutation(async ({ ctx, input }) => {
-      await Promise.all(
-        input.ids.map((id, ordre) =>
-          ctx.prisma.fiche.updateMany({
-            where: {
-              id,
-              seance: { sequence: { matiere: { classeur: { userId: ctx.session.user.id } } } },
-            },
-            data: { ordre: ordre + 1 },
-          }),
-        ),
-      );
-    }),
+    .mutation(({ ctx, input }) =>
+      ficheService(ctx.prisma).reorder(input.ids, ctx.session.user.id).catch(mapDomainError),
+    ),
 });

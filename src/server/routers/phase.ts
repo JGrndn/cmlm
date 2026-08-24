@@ -6,23 +6,26 @@ import { prisma as _db } from '@/lib/prisma';
 
 type Db = typeof _db;
 
-async function assertItemOwner(prisma: Db, itemId: string, userId: string) {
-  const item = await prisma.item.findFirst({
+const EMPTY_DOC = { type: 'doc', content: [{ type: 'paragraph' }] };
+
+async function assertPhaseOwner(prisma: Db, phaseId: string, userId: string) {
+  const phase = await prisma.phase.findFirst({
     where: {
-      id: itemId,
-      fiche: { seance: { sequence: { matiere: { classeur: { userId } } } } },
+      id: phaseId,
+      fiche: { sequence: { matiere: { classeur: { userId } } } },
     },
   });
-  if (!item) throw new TRPCError({ code: 'NOT_FOUND' });
-  return item;
+  if (!phase) throw new TRPCError({ code: 'NOT_FOUND' });
+  return phase;
 }
 
-export const itemRouter = createTRPCRouter({
+export const phaseRouter = createTRPCRouter({
   create: protectedProcedure
     .input(
       z.object({
         ficheId: z.string(),
-        contenu: z.record(z.string(), z.unknown()),
+        titre: z.string().optional(),
+        description: z.record(z.string(), z.unknown()).optional(),
         duree: z.number().int().min(1).optional(),
       }),
     )
@@ -30,16 +33,17 @@ export const itemRouter = createTRPCRouter({
       const fiche = await ctx.prisma.fiche.findFirst({
         where: {
           id: input.ficheId,
-          seance: { sequence: { matiere: { classeur: { userId: ctx.session.user.id } } } },
+          sequence: { matiere: { classeur: { userId: ctx.session.user.id } } },
         },
       });
       if (!fiche) throw new TRPCError({ code: 'NOT_FOUND' });
 
-      const count = await ctx.prisma.item.count({ where: { ficheId: input.ficheId } });
-      return ctx.prisma.item.create({
+      const count = await ctx.prisma.phase.count({ where: { ficheId: input.ficheId } });
+      return ctx.prisma.phase.create({
         data: {
           ficheId: input.ficheId,
-          contenu: input.contenu as Prisma.InputJsonValue,
+          titre: input.titre ?? '',
+          description: (input.description ?? EMPTY_DOC) as Prisma.InputJsonValue,
           ordre: count + 1,
           ...(input.duree !== undefined ? { duree: input.duree } : {}),
         },
@@ -50,18 +54,19 @@ export const itemRouter = createTRPCRouter({
     .input(
       z.object({
         id: z.string(),
-        contenu: z.record(z.string(), z.unknown()).optional(),
+        titre: z.string().optional(),
+        description: z.record(z.string(), z.unknown()).optional(),
         duree: z.number().int().min(1).nullable().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { id, contenu, ...rest } = input;
-      await assertItemOwner(ctx.prisma, id, ctx.session.user.id);
-      return ctx.prisma.item.update({
+      const { id, description, ...rest } = input;
+      await assertPhaseOwner(ctx.prisma, id, ctx.session.user.id);
+      return ctx.prisma.phase.update({
         where: { id },
         data: {
           ...rest,
-          ...(contenu !== undefined ? { contenu: contenu as Prisma.InputJsonValue } : {}),
+          ...(description !== undefined ? { description: description as Prisma.InputJsonValue } : {}),
         },
       });
     }),
@@ -69,8 +74,8 @@ export const itemRouter = createTRPCRouter({
   delete: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      await assertItemOwner(ctx.prisma, input.id, ctx.session.user.id);
-      return ctx.prisma.item.delete({ where: { id: input.id } });
+      await assertPhaseOwner(ctx.prisma, input.id, ctx.session.user.id);
+      return ctx.prisma.phase.delete({ where: { id: input.id } });
     }),
 
   reorder: protectedProcedure
@@ -78,10 +83,10 @@ export const itemRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       await Promise.all(
         input.ids.map((id, ordre) =>
-          ctx.prisma.item.updateMany({
+          ctx.prisma.phase.updateMany({
             where: {
               id,
-              fiche: { seance: { sequence: { matiere: { classeur: { userId: ctx.session.user.id } } } } },
+              fiche: { sequence: { matiere: { classeur: { userId: ctx.session.user.id } } } },
             },
             data: { ordre: ordre + 1 },
           }),

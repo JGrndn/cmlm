@@ -56,7 +56,7 @@ export function SequenceList({
               <div className="flex-1 min-w-0">
                 <span className="font-medium text-gray-900">{s.titre}</span>
                 {s.periodeLabel && <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">{s.periodeLabel}</span>}
-                <span className="ml-2 text-xs text-gray-400">{s._count.seances} séance{s._count.seances !== 1 ? 's' : ''}</span>
+                <span className="ml-2 text-xs text-gray-400">{s._count.fiches} séance{s._count.fiches !== 1 ? 's' : ''}</span>
               </div>
             )}
             <div className="flex items-center gap-1 flex-shrink-0">
@@ -66,7 +66,7 @@ export function SequenceList({
               <button onClick={() => { if (confirm('Supprimer cette séquence ?')) deleteMutation.mutate({ id: s.id }); }} className="p-1 text-gray-400 hover:text-red-600 rounded">
                 <Trash2 className="h-3.5 w-3.5" />
               </button>
-              <a href={`/classeurs/${classeurId}/matieres/${matiereId}/sequences/${s.id}`} className="p-1 text-gray-400 hover:text-blue-600 rounded">
+              <a href={`/classeurs/${classeurId}/matieres/${matiereId}/sequences/${s.id}/edit`} className="p-1 text-gray-400 hover:text-blue-600 rounded">
                 <ChevronRight className="h-4 w-4" />
               </a>
             </div>

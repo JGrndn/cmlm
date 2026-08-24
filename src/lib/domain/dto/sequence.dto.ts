@@ -3,29 +3,41 @@ export interface SequenceDto {
   titre: string;
   ordre: number;
   matiereId: string;
-  domaineId: string | null;
+  niveauIds: string[];
   periodeId: string | null;
   periodeLabel: string | null;
   objectifs: string | null;
+  disciplineIds: string[];
+  domaineIds: string[];
+  sousDomainIds: string[];
+  objectifIds: string[];
   createdAt: Date;
   updatedAt: Date;
 }
 
 export interface SequenceListItemDto extends SequenceDto {
-  _count: { seances: number };
+  _count: { fiches: number };
 }
 
 export interface CreateSequenceInput {
   titre: string;
   matiereId: string;
-  domaineId?: string;
+  niveauIds?: string[];
   periodeId?: string;
   objectifs?: string;
+  domaineIds?: string[];
+  disciplineIds?: string[];
+  sousDomainIds?: string[];
+  objectifIds?: string[];
 }
 
 export interface UpdateSequenceInput {
   titre?: string;
-  domaineId?: string | null;
+  niveauIds?: string[];
   periodeId?: string | null;
   objectifs?: string | null;
+  disciplineIds?: string[];
+  domaineIds?: string[];
+  sousDomainIds?: string[];
+  objectifIds?: string[];
 }

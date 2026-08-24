@@ -2,6 +2,8 @@ import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure, mapDomainError } from '@/server/trpc';
 import { sequenceService } from '@/server/services';
 
+const idsArray = z.array(z.string()).optional();
+
 export const sequenceRouter = createTRPCRouter({
   list: protectedProcedure
     .input(z.object({ matiereId: z.string() }))
@@ -14,9 +16,13 @@ export const sequenceRouter = createTRPCRouter({
       z.object({
         titre: z.string().min(1),
         matiereId: z.string(),
-        domaineId: z.string().optional(),
+        niveauIds: idsArray,
         periodeId: z.string().optional(),
         objectifs: z.string().optional(),
+        disciplineIds: idsArray,
+        domaineIds: idsArray,
+        sousDomainIds: idsArray,
+        objectifIds: idsArray,
       }),
     )
     .mutation(({ ctx, input }) =>
@@ -28,9 +34,13 @@ export const sequenceRouter = createTRPCRouter({
       z.object({
         id: z.string(),
         titre: z.string().min(1).optional(),
-        domaineId: z.string().nullable().optional(),
+        niveauIds: idsArray,
         periodeId: z.string().nullable().optional(),
         objectifs: z.string().nullable().optional(),
+        disciplineIds: idsArray,
+        domaineIds: idsArray,
+        sousDomainIds: idsArray,
+        objectifIds: idsArray,
       }),
     )
     .mutation(({ ctx, input }) => {

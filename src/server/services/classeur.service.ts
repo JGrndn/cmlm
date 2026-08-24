@@ -76,8 +76,8 @@ export class ClasseurService {
           include: {
             sequences: {
               include: {
-                seances: {
-                  include: { fiches: { include: { items: true } } },
+                fiches: {
+                  include: { phases: true },
                 },
               },
             },
@@ -104,22 +104,18 @@ export class ClasseurService {
                 ordre: s.ordre,
                 periodeId: null,
                 objectifs: s.objectifs,
-                seances: {
-                  create: s.seances.map((se) => ({
-                    titre: se.titre,
-                    ordre: se.ordre,
-                    date: se.date,
-                    fiches: {
-                      create: se.fiches.map((f) => ({
-                        titre: f.titre,
-                        ordre: f.ordre,
-                        items: {
-                          create: f.items.map((it) => ({
-                            ordre: it.ordre,
-                            duree: it.duree,
-                            contenu: it.contenu as object,
-                          })),
-                        },
+                fiches: {
+                  create: s.fiches.map((f) => ({
+                    titre: f.titre,
+                    ordre: f.ordre,
+                    objectifs: f.objectifs,
+                    materiels: f.materiels,
+                    phases: {
+                      create: f.phases.map((p) => ({
+                        ordre: p.ordre,
+                        titre: p.titre,
+                        duree: p.duree,
+                        description: p.description as object,
                       })),
                     },
                   })),

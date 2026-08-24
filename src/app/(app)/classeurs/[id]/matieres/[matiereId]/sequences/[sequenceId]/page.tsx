@@ -2,8 +2,8 @@ import { auth } from '@/lib/auth/auth';
 import { redirect, notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
-import { SeanceList } from '@/components/seances/SeanceList';
-import type { RouterOutputs } from '@/lib/trpc/types';
+import Link from 'next/link';
+import { Pencil } from 'lucide-react';
 
 export default async function SequencePage({
   params,
@@ -19,18 +19,8 @@ export default async function SequencePage({
     where: { id: sequenceId, matiere: { id: matiereId, classeur: { id, userId: session.user!.id! } } },
     include: {
       periode: { select: { id: true, label: true } },
-      matiere: {
-        include: {
-          classeur: true,
-        },
-      },
-      seances: {
-        orderBy: { ordre: 'asc' },
-        include: {
-          _count: { select: { fiches: true } },
-          fiches: { include: { items: { select: { duree: true } } } },
-        },
-      },
+      matiere: { include: { classeur: true } },
+      _count: { select: { fiches: true } },
     },
   });
 
@@ -47,26 +37,30 @@ export default async function SequencePage({
         ]}
       />
 
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">{sequence.titre}</h1>
-        <div className="flex items-center gap-3 mt-1">
-          {sequence.periode && (
-            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-medium">
-              {sequence.periode.label}
+      <div className="mb-6 flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">{sequence.titre}</h1>
+          <div className="flex items-center gap-3 mt-1">
+            {sequence.periode && (
+              <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-medium">
+                {sequence.periode.label}
+              </span>
+            )}
+            <span className="text-sm text-gray-500">
+              {sequence._count.fiches} séance{sequence._count.fiches !== 1 ? 's' : ''}
             </span>
-          )}
+          </div>
           {sequence.objectifs && (
-            <p className="text-sm text-gray-500">{sequence.objectifs}</p>
+            <p className="mt-2 text-sm text-gray-600">{sequence.objectifs}</p>
           )}
         </div>
+        <Link
+          href={`/classeurs/${id}/matieres/${matiereId}/sequences/${sequenceId}/edit`}
+          className="inline-flex items-center gap-1.5 px-3 py-2 bg-blue-700 text-white text-sm rounded-md hover:bg-blue-800"
+        >
+          <Pencil className="h-4 w-4" /> Modifier la séquence
+        </Link>
       </div>
-
-      <SeanceList
-        classeurId={id}
-        matiereId={matiereId}
-        sequenceId={sequenceId}
-        initialSeances={sequence.seances as unknown as RouterOutputs['seance']['list']}
-      />
     </main>
   );
 }

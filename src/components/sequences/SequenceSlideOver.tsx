@@ -13,7 +13,7 @@ interface SequenceSlideOverProps {
   onClose: () => void;
   onSuccess: () => void;
   defaultPeriodeId?: string;
-  defaultDomaineId?: string;
+  defaultDomaineIds?: string[];
   periodeOptions?: { value: string; label: string }[];
   anneeScolaireId?: string;
   sequence?: Sequence;
@@ -25,7 +25,7 @@ export function SequenceSlideOver({
   onClose,
   onSuccess,
   defaultPeriodeId,
-  defaultDomaineId,
+  defaultDomaineIds,
   periodeOptions,
   anneeScolaireId,
   sequence,
@@ -76,7 +76,7 @@ export function SequenceSlideOver({
             createMutation.mutate({
               titre: data.titre,
               matiereId,
-              domaineId: defaultDomaineId,
+              domaineIds: defaultDomaineIds,
               periodeId: data.periodeId || undefined,
               objectifs: data.objectifs || undefined,
             });

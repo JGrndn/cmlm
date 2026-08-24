@@ -9,15 +9,30 @@ import type {
 import { toSequenceDto, toSequenceListItems } from '@/server/mappers/sequence.mapper';
 
 const PERIODE_SELECT = { select: { id: true, label: true } } as const;
+const M2M_ID_SELECT = { select: { id: true } } as const;
 
 const LIST_INCLUDE = {
-  _count: { select: { seances: true } },
+  _count: { select: { fiches: true } },
   periode: PERIODE_SELECT,
+  niveaux: M2M_ID_SELECT,
+  disciplines: M2M_ID_SELECT,
+  domaines: M2M_ID_SELECT,
+  sousDomaines: M2M_ID_SELECT,
+  objectifsLearning: M2M_ID_SELECT,
 } as const;
 
 const SINGLE_INCLUDE = {
   periode: PERIODE_SELECT,
+  niveaux: M2M_ID_SELECT,
+  disciplines: M2M_ID_SELECT,
+  domaines: M2M_ID_SELECT,
+  sousDomaines: M2M_ID_SELECT,
+  objectifsLearning: M2M_ID_SELECT,
 } as const;
+
+function connectIds(ids?: string[]) {
+  return ids?.map((id) => ({ id })) ?? [];
+}
 
 export class SequenceService {
   constructor(private readonly db: PrismaClient) {}
@@ -47,10 +62,14 @@ export class SequenceService {
       data: {
         titre: input.titre,
         matiereId: input.matiereId,
-        domaineId: input.domaineId,
         periodeId: input.periodeId,
         objectifs: input.objectifs,
         ordre: count + 1,
+        niveaux: { connect: connectIds(input.niveauIds) },
+        disciplines: { connect: connectIds(input.disciplineIds) },
+        domaines: { connect: connectIds(input.domaineIds) },
+        sousDomaines: { connect: connectIds(input.sousDomainIds) },
+        objectifsLearning: { connect: connectIds(input.objectifIds) },
       },
       include: SINGLE_INCLUDE,
     });
@@ -63,9 +82,23 @@ export class SequenceService {
       where: { id },
       data: {
         titre: input.titre,
-        domaineId: input.domaineId,
         periodeId: input.periodeId,
         objectifs: input.objectifs,
+        ...(input.niveauIds !== undefined && {
+          niveaux: { set: connectIds(input.niveauIds) },
+        }),
+        ...(input.disciplineIds !== undefined && {
+          disciplines: { set: connectIds(input.disciplineIds) },
+        }),
+        ...(input.domaineIds !== undefined && {
+          domaines: { set: connectIds(input.domaineIds) },
+        }),
+        ...(input.sousDomainIds !== undefined && {
+          sousDomaines: { set: connectIds(input.sousDomainIds) },
+        }),
+        ...(input.objectifIds !== undefined && {
+          objectifsLearning: { set: connectIds(input.objectifIds) },
+        }),
       },
       include: SINGLE_INCLUDE,
     });

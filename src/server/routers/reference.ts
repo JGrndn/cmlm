@@ -62,7 +62,7 @@ export const referenceRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       return ctx.prisma.discipline.findMany({
         where: { cycleId: input.cycleId },
-        include: { domaines: true },
+        include: { domaines: { include: { sousDomaines: true } } },
         orderBy: { label: 'asc' },
       });
     }),
@@ -87,5 +87,52 @@ export const referenceRouter = createTRPCRouter({
       });
       if (!d) throw new TRPCError({ code: 'NOT_FOUND' });
       return ctx.prisma.domaine.delete({ where: { id: input.id } });
+    }),
+
+  listSousDomaines: protectedProcedure
+    .input(z.object({ domaineId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      return ctx.prisma.sousDomaine.findMany({
+        where: {
+          domaineId: input.domaineId,
+          OR: [
+            { matiereId: null },
+            { matiere: { classeur: { userId: ctx.session.user.id } } },
+          ],
+        },
+        orderBy: { label: 'asc' },
+      });
+    }),
+
+  createSousDomaine: protectedProcedure
+    .input(z.object({ domaineId: z.string(), label: z.string().min(1), matiereId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      return ctx.prisma.sousDomaine.create({
+        data: { domaineId: input.domaineId, label: input.label, matiereId: input.matiereId },
+      });
+    }),
+
+  listObjectifs: protectedProcedure
+    .input(z.object({ sousDomainIds: z.array(z.string()) }))
+    .query(async ({ ctx, input }) => {
+      return ctx.prisma.objectif.findMany({
+        where: { sousDomainId: { in: input.sousDomainIds } },
+        orderBy: { label: 'asc' },
+        select: { id: true, label: true, sousDomainId: true },
+      });
+    }),
+
+  deleteSousDomaine: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const sd = await ctx.prisma.sousDomaine.findFirst({
+        where: {
+          id: input.id,
+          matiereId: { not: null },
+          matiere: { classeur: { userId: ctx.session.user.id } },
+        },
+      });
+      if (!sd) throw new TRPCError({ code: 'NOT_FOUND' });
+      return ctx.prisma.sousDomaine.delete({ where: { id: input.id } });
     }),
 });

@@ -31,7 +31,13 @@ export default async function MatierePage({
       domaines: { orderBy: { label: 'asc' } },
       sequences: {
         orderBy: { ordre: 'asc' },
-        include: { _count: { select: { seances: true } } },
+        include: {
+          _count: { select: { fiches: true } },
+          periode: { select: { id: true, label: true } },
+          disciplines: { select: { id: true } },
+          domaines: { select: { id: true } },
+          sousDomaines: { select: { id: true } },
+        },
       },
     },
   });
@@ -43,7 +49,22 @@ export default async function MatierePage({
     orderBy: { dateDebut: 'asc' },
   });
 
-  const initialSequences = matiere.sequences as unknown as RouterOutputs['sequence']['list'];
+  const initialSequences = matiere.sequences.map((s) => ({
+    id: s.id,
+    titre: s.titre,
+    ordre: s.ordre,
+    matiereId: s.matiereId,
+    periodeId: s.periodeId,
+    periodeLabel: s.periode?.label ?? null,
+    objectifs: s.objectifs,
+    niveauId: (s as unknown as { niveauId: string | null }).niveauId ?? null,
+    disciplineIds: s.disciplines.map((d) => d.id),
+    domaineIds: s.domaines.map((d) => d.id),
+    sousDomainIds: s.sousDomaines.map((d) => d.id),
+    _count: { fiches: s._count.fiches },
+    createdAt: s.createdAt,
+    updatedAt: s.updatedAt,
+  })) as unknown as RouterOutputs['sequence']['list'];
 
   const allDomaines = [
     ...(matiere.discipline?.domaines ?? []),

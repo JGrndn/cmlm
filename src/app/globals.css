@@ -2,6 +2,43 @@
 @tailwind components;
 @tailwind utilities;
 
+/* TipTap task list — selectors based on actual rendered DOM */
+.phase-editor ul[data-type="taskList"],
+.ProseMirror ul[data-type="taskList"] {
+  list-style: none !important;
+  padding-left: 0 !important;
+  margin: 0 !important;
+}
+
+/* The li has data-checked (not data-type) in the live editor */
+.phase-editor li[data-checked],
+.ProseMirror li[data-checked] {
+  list-style: none !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-start !important;
+  gap: 0.5rem !important;
+  padding: 0 !important;
+}
+
+.phase-editor li[data-checked] > label,
+.ProseMirror li[data-checked] > label {
+  flex-shrink: 0 !important;
+  margin-top: 0.2rem !important;
+  cursor: pointer !important;
+}
+
+.phase-editor li[data-checked] > div,
+.ProseMirror li[data-checked] > div {
+  flex: 1 !important;
+  min-width: 0 !important;
+}
+
+.phase-editor li[data-checked] > div > p,
+.ProseMirror li[data-checked] > div > p {
+  margin: 0 !important;
+}
+
 @media print {
   .no-print {
     display: none !important;

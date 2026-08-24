@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { trpc } from '@/lib/trpc/client';
 import type { RouterOutputs } from '@/lib/trpc/types';
 import { Plus, ChevronDown, Trash2, Pencil } from 'lucide-react';
@@ -51,9 +52,9 @@ export function MatiereGrid({
       : new Set(allPeriodes.map((p) => p.id)),
   );
   const [dropdownOpen, setDropdownOpen] = useState<'domaines' | 'periodes' | null>(null);
-  const [slideOver, setSlideOver] = useState<{ periodeId: string; domaineId: string } | null>(null);
+  const router = useRouter();
+  const [slideOver, setSlideOver] = useState<{ periodeId: string; domaineIds: string[] } | null>(null);
   const [activePopover, setActivePopover] = useState<string | null>(null);
-  const [editingSequence, setEditingSequence] = useState<Sequence | null>(null);
   const [isAddingD, setIsAddingD] = useState(false);
   const [newDLabel, setNewDLabel] = useState('');
   const dDropdownRef = useRef<HTMLDivElement>(null);
@@ -150,7 +151,7 @@ export function MatiereGrid({
   const activePeriodes = allPeriodes.filter((p) => visiblePeriodes.has(p.id));
 
   const cellSequences = (domaineId: string, periodeId: string) =>
-    sequences.filter((s) => s.domaineId === domaineId && s.periodeId === periodeId);
+    sequences.filter((s) => s.domaineIds.includes(domaineId) && s.periodeId === periodeId);
 
   const periodeOptions = allPeriodes.map((p) => ({ value: p.id, label: p.label }));
 
@@ -320,7 +321,7 @@ export function MatiereGrid({
                       <td key={p.id} className={`px-2 py-1 align-top text-center ${pi === 0 ? 'rounded-l-lg' : ''} ${pi === activePeriodes.length - 1 ? 'rounded-r-lg' : ''}`}>
                         <div className="flex flex-col gap-2 min-w-[160px]">
                           {seqs.map((s) => (
-                            <div key={s.id} className="font-bold relative bg-white rounded px-2 min-h-12 flex items-center justify-center">
+                            <div key={s.id} className=" relative bg-white rounded px-2 min-h-12 flex items-center justify-center">
                               <button
                                 type="button"
                                 data-seq-popover
@@ -337,7 +338,10 @@ export function MatiereGrid({
                                   <button
                                     type="button"
                                     title="Modifier"
-                                    onClick={() => { setActivePopover(null); setEditingSequence(s); }}
+                                    onClick={() => {
+                                      setActivePopover(null);
+                                      router.push(`/classeurs/${classeurId}/matieres/${matiereId}/sequences/${s.id}/edit`);
+                                    }}
                                     className="p-1 text-gray-500 hover:text-blue-600 rounded"
                                   >
                                     <Pencil className="h-3.5 w-3.5" />
@@ -357,8 +361,8 @@ export function MatiereGrid({
                           ))}
                           <button
                             type="button"
-                            onClick={() => setSlideOver({ periodeId: p.id, domaineId: d.id })}
-                            className="flex items-center font-bold justify-center gap-0.5 text-sm text-gray-500 rounded-md px-4 h-8 w-full hover:bg-gray-200 hover:text-gray-700 transition-colors"
+                            onClick={() => setSlideOver({ periodeId: p.id, domaineIds: [d.id] })}
+                            className="flex items-center justify-center gap-0.5 text-sm text-gray-500 rounded-md px-4 h-8 w-full hover:bg-gray-200 hover:text-gray-700 transition-colors"
                           >
                             <Plus className="h-3 w-3" />
                             Ajouter
@@ -391,19 +395,8 @@ export function MatiereGrid({
           onClose={() => setSlideOver(null)}
           onSuccess={() => utils.sequence.list.invalidate()}
           defaultPeriodeId={slideOver.periodeId}
-          defaultDomaineId={slideOver.domaineId}
+          defaultDomaineIds={slideOver.domaineIds}
           periodeOptions={periodeOptions}
-        />
-      )}
-
-      {editingSequence && (
-        <SequenceSlideOver
-          matiereId={matiereId}
-          isOpen
-          onClose={() => setEditingSequence(null)}
-          onSuccess={() => utils.sequence.list.invalidate()}
-          periodeOptions={periodeOptions}
-          sequence={editingSequence}
         />
       )}
     </div>
