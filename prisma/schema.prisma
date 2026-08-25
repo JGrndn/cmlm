@@ -110,17 +110,18 @@ model SousDomaine {
 }
 
 model Classeur {
-  id              String         @id @default(cuid())
-  titre           String
-  userId          String
-  niveauId        String
-  anneeScolaireId String
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  anneeScolaire   AnneeScolaire  @relation(fields: [anneeScolaireId], references: [id])
-  niveau          NiveauScolaire @relation(fields: [niveauId], references: [id])
-  user            User           @relation(fields: [userId], references: [id])
-  matieres        Matiere[]
+  id                 String         @id @default(cuid())
+  titre              String
+  userId             String
+  niveauId           String
+  anneeScolaireId    String
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  anneeScolaire      AnneeScolaire  @relation(fields: [anneeScolaireId], references: [id])
+  niveau             NiveauScolaire @relation(fields: [niveauId], references: [id])
+  user               User           @relation(fields: [userId], references: [id])
+  matieres           Matiere[]
+  fichesSansSequence Fiche[]
 
   @@map("classeurs")
 }
@@ -168,13 +169,15 @@ model Sequence {
 model Fiche {
   id           String        @id @default(cuid())
   titre        String
-  sequenceId   String
+  sequenceId   String?
+  classeurId   String?
   ordre        Int
   objectifs    String?
   materiels    String[]
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
-  sequence     Sequence      @relation(fields: [sequenceId], references: [id], onDelete: Cascade)
+  sequence     Sequence?     @relation(fields: [sequenceId], references: [id], onDelete: Cascade)
+  classeur     Classeur?     @relation(fields: [classeurId], references: [id], onDelete: Cascade)
   phases       Phase[]
   disciplines  Discipline[]
   domaines     Domaine[]

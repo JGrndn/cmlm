@@ -10,6 +10,7 @@ const FICHE_INCLUDE = {
   disciplines: M2M_ID_SELECT,
   domaines: M2M_ID_SELECT,
   sousDomaines: M2M_ID_SELECT,
+  classeur: true as const,
 } as const;
 
 function connectIds(ids?: string[]) {
@@ -33,12 +34,33 @@ export class FicheService {
     return rows.map(toFicheDto);
   }
 
-  async getById(id: string, userId: string): Promise<FicheWithPhasesDto> {
-    const row = await this.db.fiche.findFirst({
-      where: { id, sequence: { matiere: { classeur: { userId } } } },
+  async listStandalone(classeurId: string, userId: string): Promise<FicheWithPhasesDto[]> {
+    const classeur = await this.db.classeur.findFirst({
+      where: { id: classeurId, userId },
+    });
+    if (!classeur) throw new DomainError('Classeur non trouvé', 'NOT_FOUND');
+
+    const rows = await this.db.fiche.findMany({
+      where: { classeurId, sequenceId: null },
+      orderBy: { ordre: 'asc' },
       include: FICHE_INCLUDE,
     });
+    return rows.map(toFicheDto);
+  }
+
+  async getById(id: string, userId: string): Promise<FicheWithPhasesDto> {
+    const row = await this.db.fiche.findUnique({
+      where: { id },
+      include: {
+        ...FICHE_INCLUDE,
+        sequence: { include: { matiere: { include: { classeur: true } } } },
+      },
+    });
     if (!row) throw new DomainError('Fiche non trouvée', 'NOT_FOUND');
+    const owned =
+      row.sequence?.matiere.classeur.userId === userId ||
+      row.classeur?.userId === userId;
+    if (!owned) throw new DomainError('Fiche non trouvée', 'NOT_FOUND');
     return toFicheDto(row);
   }
 
@@ -51,6 +73,37 @@ export class FicheService {
     const count = await this.db.fiche.count({ where: { sequenceId: input.sequenceId } });
     const row = await this.db.fiche.create({
       data: { titre: input.titre, sequenceId: input.sequenceId, ordre: count + 1, materiels: [] },
+      include: FICHE_INCLUDE,
+    });
+    return toFicheDto(row);
+  }
+
+  async createStandalone(titre: string, classeurId: string, userId: string): Promise<FicheWithPhasesDto> {
+    const classeur = await this.db.classeur.findFirst({
+      where: { id: classeurId, userId },
+    });
+    if (!classeur) throw new DomainError('Classeur non trouvé', 'NOT_FOUND');
+
+    const count = await this.db.fiche.count({ where: { classeurId, sequenceId: null } });
+    const row = await this.db.fiche.create({
+      data: { titre, classeurId, ordre: count + 1, materiels: [] },
+      include: FICHE_INCLUDE,
+    });
+    return toFicheDto(row);
+  }
+
+  async attachToSequence(ficheId: string, sequenceId: string, userId: string): Promise<FicheWithPhasesDto> {
+    await this.assertOwner(ficheId, userId);
+
+    const seq = await this.db.sequence.findFirst({
+      where: { id: sequenceId, matiere: { classeur: { userId } } },
+    });
+    if (!seq) throw new DomainError('Séquence non trouvée', 'NOT_FOUND');
+
+    const count = await this.db.fiche.count({ where: { sequenceId } });
+    const row = await this.db.fiche.update({
+      where: { id: ficheId },
+      data: { sequenceId, classeurId: null, ordre: count + 1 },
       include: FICHE_INCLUDE,
     });
     return toFicheDto(row);
@@ -96,10 +149,18 @@ export class FicheService {
   }
 
   private async assertOwner(id: string, userId: string) {
-    const row = await this.db.fiche.findFirst({
-      where: { id, sequence: { matiere: { classeur: { userId } } } },
+    const row = await this.db.fiche.findUnique({
+      where: { id },
+      include: {
+        sequence: { include: { matiere: { include: { classeur: true } } } },
+        classeur: true,
+      },
     });
     if (!row) throw new DomainError('Fiche non trouvée', 'NOT_FOUND');
+    const owned =
+      row.sequence?.matiere.classeur.userId === userId ||
+      row.classeur?.userId === userId;
+    if (!owned) throw new DomainError('Fiche non trouvée', 'NOT_FOUND');
     return row;
   }
 }

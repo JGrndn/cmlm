@@ -3,7 +3,8 @@ import type { PhaseDto } from './phase.dto';
 export interface FicheDto {
   id: string;
   titre: string;
-  sequenceId: string;
+  sequenceId: string | null;
+  classeurId: string | null;
   ordre: number;
   objectifs: string | null;
   materiels: string[];

@@ -2,7 +2,7 @@
 
 import { useRef, useEffect, useState, useMemo } from 'react';
 import { trpc } from '@/lib/trpc/client';
-import { Plus } from 'lucide-react';
+import { Plus, Link2 } from 'lucide-react';
 import { FicheCard } from '@/components/fiches/FicheCard';
 import { NiveauPicker } from '@/components/ui/NiveauPicker';
 import { GroupedMultiSelectField } from '@/components/ui/GroupedMultiSelectField';
@@ -17,7 +17,7 @@ interface Phase {
 interface Fiche {
   id: string;
   titre: string;
-  sequenceId: string;
+  sequenceId: string | null;
   ordre: number;
   objectifs: string | null;
   materiels: string[];
@@ -96,6 +96,7 @@ export function SequenceEditor({
   const [sousDomainIds, setSousDomainIds] = useState<string[]>(initialData.sousDomainIds);
   const [objectifIds, setObjectifIds] = useState<string[]>(initialData.objectifIds);
   const [newFicheTitre, setNewFicheTitre] = useState('');
+  const [attachPanelOpen, setAttachPanelOpen] = useState(false);
   const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const utils = trpc.useUtils();
 
@@ -103,12 +104,22 @@ export function SequenceEditor({
     { sequenceId },
     { initialData: initialData.fiches as never },
   );
+  const { data: standaloneFiches = [] } = trpc.fiche.listStandalone.useQuery(
+    { classeurId },
+    { enabled: attachPanelOpen },
+  );
 
   const updateSeq = trpc.sequence.update.useMutation({
     onSuccess: () => utils.sequence.list.invalidate(),
   });
   const createFiche = trpc.fiche.create.useMutation({
     onSuccess: () => { utils.fiche.list.invalidate(); setNewFicheTitre(''); },
+  });
+  const attachFiche = trpc.fiche.attachToSequence.useMutation({
+    onSuccess: () => {
+      utils.fiche.list.invalidate();
+      utils.fiche.listStandalone.invalidate();
+    },
   });
 
   useEffect(() => () => { if (saveTimeout.current) clearTimeout(saveTimeout.current); }, []);
@@ -379,6 +390,48 @@ export function SequenceEditor({
             <Plus className="h-4 w-4" /> Ajouter séance
           </button>
         </form>
+
+        <div className="mt-3">
+          <button
+            type="button"
+            onClick={() => setAttachPanelOpen((v) => !v)}
+            className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+          >
+            <Link2 className="h-4 w-4" />
+            {attachPanelOpen ? 'Fermer' : 'Rattacher une fiche existante'}
+          </button>
+
+          {attachPanelOpen && (
+            <div className="mt-2 border border-gray-200 rounded-lg overflow-hidden">
+              {standaloneFiches.length === 0 ? (
+                <p className="px-4 py-3 text-sm text-gray-400 italic">
+                  Aucune fiche autonome disponible dans ce classeur.
+                </p>
+              ) : (
+                <ul className="divide-y divide-gray-100">
+                  {standaloneFiches.map((fiche) => (
+                    <li key={fiche.id} className="flex items-center justify-between px-4 py-2.5 hover:bg-gray-50">
+                      <div>
+                        <span className="text-sm font-medium text-gray-800">{fiche.titre || 'Sans titre'}</span>
+                        <span className="ml-2 text-xs text-gray-400">
+                          {fiche.phases.length} phase{fiche.phases.length !== 1 ? 's' : ''}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        disabled={attachFiche.isPending}
+                        onClick={() => attachFiche.mutate({ id: fiche.id, sequenceId })}
+                        className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100 disabled:opacity-50"
+                      >
+                        <Link2 className="h-3 w-3" /> Rattacher
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

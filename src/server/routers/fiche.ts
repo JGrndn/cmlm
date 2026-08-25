@@ -11,6 +11,12 @@ export const ficheRouter = createTRPCRouter({
       ficheService(ctx.prisma).list(input.sequenceId, ctx.session.user.id).catch(mapDomainError),
     ),
 
+  listStandalone: protectedProcedure
+    .input(z.object({ classeurId: z.string() }))
+    .query(({ ctx, input }) =>
+      ficheService(ctx.prisma).listStandalone(input.classeurId, ctx.session.user.id).catch(mapDomainError),
+    ),
+
   getById: protectedProcedure
     .input(z.object({ id: z.string() }))
     .query(({ ctx, input }) =>
@@ -21,6 +27,18 @@ export const ficheRouter = createTRPCRouter({
     .input(z.object({ titre: z.string().min(1), sequenceId: z.string() }))
     .mutation(({ ctx, input }) =>
       ficheService(ctx.prisma).create(input, ctx.session.user.id).catch(mapDomainError),
+    ),
+
+  createStandalone: protectedProcedure
+    .input(z.object({ titre: z.string().min(1), classeurId: z.string() }))
+    .mutation(({ ctx, input }) =>
+      ficheService(ctx.prisma).createStandalone(input.titre, input.classeurId, ctx.session.user.id).catch(mapDomainError),
+    ),
+
+  attachToSequence: protectedProcedure
+    .input(z.object({ id: z.string(), sequenceId: z.string() }))
+    .mutation(({ ctx, input }) =>
+      ficheService(ctx.prisma).attachToSequence(input.id, input.sequenceId, ctx.session.user.id).catch(mapDomainError),
     ),
 
   update: protectedProcedure

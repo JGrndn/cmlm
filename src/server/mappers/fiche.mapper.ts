@@ -7,6 +7,7 @@ export type PrismaFicheWithPhases = Prisma.FicheGetPayload<{
     disciplines: { select: { id: true } };
     domaines: { select: { id: true } };
     sousDomaines: { select: { id: true } };
+    classeur: true;
   };
 }>;
 
@@ -28,6 +29,7 @@ export function toFicheDto(raw: PrismaFicheWithPhases): FicheWithPhasesDto {
     id: raw.id,
     titre: raw.titre,
     sequenceId: raw.sequenceId,
+    classeurId: raw.classeurId,
     ordre: raw.ordre,
     objectifs: raw.objectifs,
     materiels: raw.materiels,

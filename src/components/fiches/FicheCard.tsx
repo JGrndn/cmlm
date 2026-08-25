@@ -17,7 +17,7 @@ interface FicheCardProps {
   fiche: {
     id: string;
     titre: string;
-    sequenceId: string;
+    sequenceId: string | null;
     ordre: number;
     objectifs: string | null;
     materiels: string[];
@@ -29,9 +29,10 @@ interface FicheCardProps {
   disciplineOptions: { value: string; label: string }[];
   domaineOptions: { value: string; label: string }[];
   sousDomainOptions: { value: string; label: string }[];
+  onInvalidate?: () => void;
 }
 
-export function FicheCard({ fiche, disciplineOptions, domaineOptions, sousDomainOptions }: FicheCardProps) {
+export function FicheCard({ fiche, disciplineOptions, domaineOptions, sousDomainOptions, onInvalidate }: FicheCardProps) {
   const [expanded, setExpanded] = useState(true);
   const [titre, setTitre] = useState(fiche.titre);
   const [objectifs, setObjectifs] = useState(fiche.objectifs ?? '');
@@ -40,13 +41,13 @@ export function FicheCard({ fiche, disciplineOptions, domaineOptions, sousDomain
   const utils = trpc.useUtils();
 
   const updateFiche = trpc.fiche.update.useMutation({
-    onSuccess: () => utils.fiche.list.invalidate(),
+    onSuccess: () => onInvalidate ? onInvalidate() : utils.fiche.list.invalidate(),
   });
   const deleteFiche = trpc.fiche.delete.useMutation({
-    onSuccess: () => utils.fiche.list.invalidate(),
+    onSuccess: () => onInvalidate ? onInvalidate() : utils.fiche.list.invalidate(),
   });
   const createPhase = trpc.phase.create.useMutation({
-    onSuccess: () => utils.fiche.list.invalidate(),
+    onSuccess: () => onInvalidate ? onInvalidate() : utils.fiche.list.invalidate(),
   });
 
   useEffect(() => () => { if (saveTimeout.current) clearTimeout(saveTimeout.current); }, []);
@@ -170,7 +171,7 @@ export function FicheCard({ fiche, disciplineOptions, domaineOptions, sousDomain
             <label className="block text-sm font-medium text-gray-700 mb-2">Déroulement</label>
             <div className="space-y-2">
               {fiche.phases.map((phase) => (
-                <PhaseEditor key={phase.id} phase={phase} ficheId={fiche.id} />
+                <PhaseEditor key={phase.id} phase={phase} ficheId={fiche.id} onInvalidate={onInvalidate} />
               ))}
             </div>
             <button

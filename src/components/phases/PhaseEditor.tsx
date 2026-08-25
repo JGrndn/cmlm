@@ -218,7 +218,7 @@ function Toolbar({ editor }: { editor: Editor }) {
 
 const DUREE_PRESETS = [5, 10, 15, 20, 25, 30];
 
-export function PhaseEditor({ phase }: { phase: Phase; ficheId?: string }) {
+export function PhaseEditor({ phase, onInvalidate }: { phase: Phase; ficheId?: string; onInvalidate?: () => void }) {
   const [titre, setTitre] = useState(phase.titre);
   const [duree, setDuree] = useState<number | null>(phase.duree ?? null);
   const [freeInput, setFreeInput] = useState<string>(
@@ -228,10 +228,10 @@ export function PhaseEditor({ phase }: { phase: Phase; ficheId?: string }) {
   const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const updatePhase = trpc.phase.update.useMutation({
-    onSuccess: () => utils.fiche.list.invalidate(),
+    onSuccess: () => onInvalidate ? onInvalidate() : utils.fiche.list.invalidate(),
   });
   const deletePhase = trpc.phase.delete.useMutation({
-    onSuccess: () => utils.fiche.list.invalidate(),
+    onSuccess: () => onInvalidate ? onInvalidate() : utils.fiche.list.invalidate(),
   });
 
   const editor = useEditor({
