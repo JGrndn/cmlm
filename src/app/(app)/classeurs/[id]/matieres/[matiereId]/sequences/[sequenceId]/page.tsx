@@ -1,6 +1,6 @@
 import { auth } from '@/lib/auth/auth';
 import { redirect, notFound } from 'next/navigation';
-import { prisma } from '@/lib/prisma';
+import { classeurSvc, matiereSvc, sequenceSvc } from '@/server/services';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
 import Link from 'next/link';
 import { Pencil } from 'lucide-react';
@@ -14,25 +14,23 @@ export default async function SequencePage({
   if (!session) redirect('/signin');
 
   const { id, matiereId, sequenceId } = await params;
+  const userId = session.user!.id!;
 
-  const sequence = await prisma.sequence.findFirst({
-    where: { id: sequenceId, matiere: { id: matiereId, classeur: { id, userId: session.user!.id! } } },
-    include: {
-      periode: { select: { id: true, label: true } },
-      matiere: { include: { classeur: true } },
-      _count: { select: { fiches: true } },
-    },
-  });
+  const [classeur, matiere, sequence] = await Promise.all([
+    classeurSvc.getById(id, userId).catch(() => null),
+    matiereSvc.getById(matiereId, userId).catch(() => null),
+    sequenceSvc.getById(sequenceId, userId).catch(() => null),
+  ]);
 
-  if (!sequence) notFound();
+  if (!classeur || !matiere || !sequence) notFound();
 
   return (
     <main className="p-6 max-w-3xl mx-auto">
       <Breadcrumb
         items={[
           { label: 'Mes classeurs', href: '/classeurs' },
-          { label: sequence.matiere.classeur.titre, href: `/classeurs/${id}` },
-          { label: sequence.matiere.titre, href: `/classeurs/${id}/matieres/${matiereId}` },
+          { label: classeur.titre, href: `/classeurs/${id}` },
+          { label: matiere.titre, href: `/classeurs/${id}/matieres/${matiereId}` },
           { label: sequence.titre },
         ]}
       />
@@ -41,9 +39,9 @@ export default async function SequencePage({
         <div>
           <h1 className="text-2xl font-bold text-gray-900">{sequence.titre}</h1>
           <div className="flex items-center gap-3 mt-1">
-            {sequence.periode && (
+            {sequence.periodeLabel && (
               <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-medium">
-                {sequence.periode.label}
+                {sequence.periodeLabel}
               </span>
             )}
             <span className="text-sm text-gray-500">

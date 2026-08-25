@@ -5,6 +5,7 @@ import { matiereRouter } from './matiere';
 import { sequenceRouter } from './sequence';
 import { ficheRouter } from './fiche';
 import { phaseRouter } from './phase';
+import { fichierRouter } from './fichier';
 
 export const appRouter = createTRPCRouter({
   reference: referenceRouter,
@@ -13,6 +14,7 @@ export const appRouter = createTRPCRouter({
   sequence: sequenceRouter,
   fiche: ficheRouter,
   phase: phaseRouter,
+  fichier: fichierRouter,
 });
 
 export type AppRouter = typeof appRouter;

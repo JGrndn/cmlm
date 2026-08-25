@@ -40,6 +40,7 @@ export function toClasseurListItem(raw: PrismaClasseurListItem): ClasseurListIte
     niveau: {
       id: raw.niveau.id,
       label: raw.niveau.label,
+      code: raw.niveau.code,
       cycle: { id: raw.niveau.cycle.id, label: raw.niveau.cycle.label },
     },
     anneeScolaire: {
@@ -62,6 +63,7 @@ export function toClasseurDetail(raw: PrismaClasseurDetail): ClasseurDetailDto {
     niveau: {
       id: raw.niveau.id,
       label: raw.niveau.label,
+      code: raw.niveau.code,
       cycle: { id: raw.niveau.cycle.id, label: raw.niveau.cycle.label },
     },
     anneeScolaire: {

@@ -1,9 +1,8 @@
 import { auth } from '@/lib/auth/auth';
 import { redirect, notFound } from 'next/navigation';
-import { prisma } from '@/lib/prisma';
+import { classeurSvc, matiereSvc } from '@/server/services';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
 import { MatiereList } from '@/components/matieres/MatiereList';
-import type { RouterOutputs } from '@/lib/trpc/types';
 
 export default async function ClasseurPage({
   params,
@@ -14,21 +13,12 @@ export default async function ClasseurPage({
   if (!session) redirect('/signin');
 
   const { id } = await params;
+  const userId = session.user!.id!;
 
-  const classeur = await prisma.classeur.findFirst({
-    where: { id, userId: session.user!.id! },
-    include: {
-      niveau: { include: { cycle: true } },
-      anneeScolaire: true,
-      matieres: {
-        orderBy: { ordre: 'asc' },
-        include: {
-          discipline: true,
-          _count: { select: { sequences: true } },
-        },
-      },
-    },
-  });
+  const [classeur, matieres] = await Promise.all([
+    classeurSvc.getById(id, userId).catch(() => null),
+    matiereSvc.list(id, userId).catch(() => []),
+  ]);
 
   if (!classeur) notFound();
 
@@ -48,7 +38,7 @@ export default async function ClasseurPage({
         </p>
       </div>
 
-      <MatiereList classeurId={id} cycleId={classeur.niveau.cycleId} initialMatieres={classeur.matieres as unknown as RouterOutputs['matiere']['list']} />
+      <MatiereList classeurId={id} cycleId={classeur.niveau.cycle.id} initialMatieres={matieres} />
     </main>
   );
 }

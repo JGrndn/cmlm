@@ -1,6 +1,6 @@
 import { auth } from '@/lib/auth/auth';
 import { redirect } from 'next/navigation';
-import { prisma } from '@/lib/prisma';
+import { classeurSvc, ficheSvc } from '@/server/services';
 import { FichesGlobalesClient } from '@/components/fiches/FichesGlobalesClient';
 
 export default async function FichesPage() {
@@ -9,46 +9,13 @@ export default async function FichesPage() {
 
   const userId = session.user!.id!;
 
-  const classeurs = await prisma.classeur.findMany({
-    where: { userId },
-    select: { id: true, titre: true },
-    orderBy: { createdAt: 'asc' },
-  });
+  const classeurs = await classeurSvc.list(userId);
 
   const fichesByClasseur = await Promise.all(
-    classeurs.map(async (classeur) => {
-      const fiches = await prisma.fiche.findMany({
-        where: { classeurId: classeur.id, sequenceId: null },
-        include: {
-          phases: { orderBy: { ordre: 'asc' } },
-          disciplines: { select: { id: true } },
-          domaines: { select: { id: true } },
-          sousDomaines: { select: { id: true } },
-        },
-        orderBy: { ordre: 'asc' },
-      });
-      return {
-        classeur,
-        fiches: fiches.map((f) => ({
-          id: f.id,
-          titre: f.titre,
-          sequenceId: f.sequenceId,
-          classeurId: f.classeurId,
-          ordre: f.ordre,
-          objectifs: f.objectifs,
-          materiels: f.materiels,
-          disciplineIds: f.disciplines.map((d) => d.id),
-          domaineIds: f.domaines.map((d) => d.id),
-          sousDomainIds: f.sousDomaines.map((d) => d.id),
-          phases: f.phases.map((p) => ({
-            id: p.id,
-            titre: p.titre,
-            duree: p.duree,
-            description: p.description,
-          })),
-        })),
-      };
-    }),
+    classeurs.map(async (classeur) => ({
+      classeur: { id: classeur.id, titre: classeur.titre },
+      fiches: await ficheSvc.listStandalone(classeur.id, userId),
+    })),
   );
 
   return (

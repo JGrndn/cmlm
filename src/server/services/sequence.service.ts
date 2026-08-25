@@ -2,11 +2,13 @@ import type { PrismaClient } from '@/generated/prisma';
 import { DomainError } from '@/lib/errors/domain-error';
 import type {
   SequenceDto,
+  SequenceDetailDto,
   SequenceListItemDto,
   CreateSequenceInput,
   UpdateSequenceInput,
 } from '@/lib/domain/dto';
 import { toSequenceDto, toSequenceListItems } from '@/server/mappers/sequence.mapper';
+import { toFicheDto } from '@/server/mappers/fiche.mapper';
 
 const PERIODE_SELECT = { select: { id: true, label: true } } as const;
 const M2M_ID_SELECT = { select: { id: true } } as const;
@@ -30,12 +32,39 @@ const SINGLE_INCLUDE = {
   objectifsLearning: M2M_ID_SELECT,
 } as const;
 
+const DETAIL_INCLUDE = {
+  ...SINGLE_INCLUDE,
+  fiches: {
+    orderBy: { ordre: 'asc' as const },
+    include: {
+      phases: { orderBy: { ordre: 'asc' as const } },
+      disciplines: { select: { id: true } },
+      domaines: { select: { id: true } },
+      sousDomaines: { select: { id: true } },
+      classeur: true as const,
+    },
+  },
+} as const;
+
 function connectIds(ids?: string[]) {
   return ids?.map((id) => ({ id })) ?? [];
 }
 
 export class SequenceService {
   constructor(private readonly db: PrismaClient) {}
+
+  async getById(id: string, userId: string): Promise<SequenceDetailDto> {
+    const row = await this.db.sequence.findFirst({
+      where: { id, matiere: { classeur: { userId } } },
+      include: DETAIL_INCLUDE,
+    });
+    if (!row) throw new DomainError('Séquence non trouvée', 'NOT_FOUND');
+    return {
+      ...toSequenceDto(row),
+      _count: { fiches: row.fiches.length },
+      fiches: row.fiches.map(toFicheDto),
+    };
+  }
 
   async list(matiereId: string, userId: string): Promise<SequenceListItemDto[]> {
     const matiere = await this.db.matiere.findFirst({

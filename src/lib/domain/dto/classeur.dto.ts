@@ -3,6 +3,7 @@ import type { MatiereInClasseurDto } from './matiere.dto';
 export interface NiveauDto {
   id: string;
   label: string;
+  code: string;
   cycle: { id: string; label: string };
 }
 

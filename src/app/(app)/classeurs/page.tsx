@@ -1,25 +1,17 @@
 import { auth } from '@/lib/auth/auth';
 import { redirect } from 'next/navigation';
-import { prisma } from '@/lib/prisma';
+import { classeurSvc } from '@/server/services';
 import { ClasseurCard } from '@/components/classeurs/ClasseurCard';
 import { ClasseurCreateButton } from '@/components/classeurs/ClasseurCreateButton';
+import type { ClasseurListItemDto } from '@/lib/domain/dto';
 
 export default async function ClasseursPage() {
   const session = await auth();
   if (!session) redirect('/signin');
 
-  const classeurs = await prisma.classeur.findMany({
-    where: { userId: session.user!.id! },
-    include: {
-      niveau: { include: { cycle: true } },
-      anneeScolaire: true,
-      _count: { select: { matieres: true } },
-    },
-    orderBy: [{ anneeScolaire: { debut: 'desc' } }, { createdAt: 'desc' }],
-  });
+  const classeurs = await classeurSvc.list(session.user!.id!);
 
-  // Grouper par année scolaire
-  const grouped = classeurs.reduce<Record<string, typeof classeurs>>(
+  const grouped = classeurs.reduce<Record<string, ClasseurListItemDto[]>>(
     (acc, c) => {
       const key = c.anneeScolaire.label;
       if (!acc[key]) acc[key] = [];

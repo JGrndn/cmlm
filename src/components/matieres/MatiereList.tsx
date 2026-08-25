@@ -6,7 +6,10 @@ import type { RouterOutputs } from '@/lib/trpc/types';
 import { Plus, Pencil, Trash2, ChevronRight } from 'lucide-react';
 import { MatiereSlideOver } from './MatiereSlideOver';
 
-type Matiere = RouterOutputs['matiere']['list'][0];
+type Matiere = Omit<RouterOutputs['matiere']['list'][0], 'createdAt' | 'updatedAt'> & {
+  createdAt: Date | string;
+  updatedAt: Date | string;
+};
 
 export function MatiereList({
   classeurId,
@@ -24,7 +27,7 @@ export function MatiereList({
 
   const { data: matieres = initialMatieres } = trpc.matiere.list.useQuery(
     { classeurId },
-    { initialData: initialMatieres },
+    { initialData: initialMatieres as RouterOutputs['matiere']['list'] },
   );
 
   const updateMutation = trpc.matiere.update.useMutation({

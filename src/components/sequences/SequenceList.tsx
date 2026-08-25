@@ -6,7 +6,10 @@ import type { RouterOutputs } from '@/lib/trpc/types';
 import { Plus, Pencil, Trash2, ChevronRight } from 'lucide-react';
 import { SequenceSlideOver } from './SequenceSlideOver';
 
-type Sequence = RouterOutputs['sequence']['list'][0];
+type Sequence = Omit<RouterOutputs['sequence']['list'][0], 'createdAt' | 'updatedAt'> & {
+  createdAt: Date | string;
+  updatedAt: Date | string;
+};
 
 export function SequenceList({
   matiereId,
@@ -26,7 +29,7 @@ export function SequenceList({
 
   const { data: sequences = initialSequences } = trpc.sequence.list.useQuery(
     { matiereId },
-    { initialData: initialSequences },
+    { initialData: initialSequences as RouterOutputs['sequence']['list'] },
   );
 
   const updateMutation = trpc.sequence.update.useMutation({

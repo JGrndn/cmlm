@@ -7,7 +7,10 @@ import type { RouterOutputs } from '@/lib/trpc/types';
 import { Plus, ChevronDown, Trash2, Pencil } from 'lucide-react';
 import { SequenceSlideOver } from '@/components/sequences/SequenceSlideOver';
 
-type Sequence = RouterOutputs['sequence']['list'][0];
+type Sequence = Omit<RouterOutputs['sequence']['list'][0], 'createdAt' | 'updatedAt'> & {
+  createdAt: Date | string;
+  updatedAt: Date | string;
+};
 type Domaine = { id: string; label: string; matiereId: string | null };
 type PeriodeItem = { id: string; label: string; dateDebut: Date | string; dateFin: Date | string };
 
@@ -89,7 +92,7 @@ export function MatiereGrid({
 
   const { data: sequences = initialSequences } = trpc.sequence.list.useQuery(
     { matiereId },
-    { initialData: initialSequences },
+    { initialData: initialSequences as RouterOutputs['sequence']['list'] },
   );
 
   useEffect(() => {

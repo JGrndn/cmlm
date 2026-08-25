@@ -1,3 +1,10 @@
+import type { FicheWithPhasesDto } from './fiche.dto';
+
+export interface SequenceDetailDto extends SequenceDto {
+  _count: { fiches: number };
+  fiches: FicheWithPhasesDto[];
+}
+
 export interface SequenceDto {
   id: string;
   titre: string;

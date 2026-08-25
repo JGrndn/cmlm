@@ -167,23 +167,36 @@ model Sequence {
 }
 
 model Fiche {
-  id           String        @id @default(cuid())
-  titre        String
-  sequenceId   String?
-  classeurId   String?
-  ordre        Int
-  objectifs    String?
-  materiels    String[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  sequence     Sequence?     @relation(fields: [sequenceId], references: [id], onDelete: Cascade)
-  classeur     Classeur?     @relation(fields: [classeurId], references: [id], onDelete: Cascade)
-  phases       Phase[]
-  disciplines  Discipline[]
-  domaines     Domaine[]
-  sousDomaines SousDomaine[]
+  id               String             @id @default(cuid())
+  titre            String
+  sequenceId       String?
+  classeurId       String?
+  ordre            Int
+  objectifs        String?
+  materiels        String[]
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  sequence         Sequence?          @relation(fields: [sequenceId], references: [id], onDelete: Cascade)
+  classeur         Classeur?          @relation(fields: [classeurId], references: [id], onDelete: Cascade)
+  phases           Phase[]
+  disciplines      Discipline[]
+  domaines         Domaine[]
+  sousDomaines     SousDomaine[]
+  fichiersAttaches FichierAttache[]
 
   @@map("fiches")
+}
+
+model FichierAttache {
+  id        String   @id @default(cuid())
+  nom       String
+  chemin    String
+  taille    Int
+  ficheId   String
+  fiche     Fiche    @relation(fields: [ficheId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@map("fichiers_attaches")
 }
 
 model Phase {

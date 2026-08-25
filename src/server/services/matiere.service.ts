@@ -2,6 +2,7 @@ import type { PrismaClient } from '@/generated/prisma';
 import { DomainError } from '@/lib/errors/domain-error';
 import type {
   MatiereDto,
+  MatiereInClasseurDto,
   MatiereListItemDto,
   CreateMatiereInput,
   UpdateMatiereInput,
@@ -15,6 +16,18 @@ const LIST_INCLUDE = {
 
 export class MatiereService {
   constructor(private readonly db: PrismaClient) {}
+
+  async getById(id: string, userId: string): Promise<MatiereInClasseurDto> {
+    const row = await this.db.matiere.findFirst({
+      where: { id, classeur: { userId } },
+      include: { discipline: true },
+    });
+    if (!row) throw new DomainError('Matière non trouvée', 'NOT_FOUND');
+    return {
+      ...toMatiereDto(row),
+      discipline: row.discipline ? { id: row.discipline.id, label: row.discipline.label } : null,
+    };
+  }
 
   async list(classeurId: string, userId: string): Promise<MatiereListItemDto[]> {
     const classeur = await this.db.classeur.findFirst({ where: { id: classeurId, userId } });

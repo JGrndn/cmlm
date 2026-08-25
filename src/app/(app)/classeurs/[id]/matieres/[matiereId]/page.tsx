@@ -1,10 +1,9 @@
 import { auth } from '@/lib/auth/auth';
 import { redirect, notFound } from 'next/navigation';
-import { prisma } from '@/lib/prisma';
+import { classeurSvc, matiereSvc, sequenceSvc, referenceSvc } from '@/server/services';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
 import { MatiereGrid } from '@/components/matieres/MatiereGrid';
 import { SequenceList } from '@/components/sequences/SequenceList';
-import type { RouterOutputs } from '@/lib/trpc/types';
 
 export default async function MatierePage({
   params,
@@ -15,68 +14,29 @@ export default async function MatierePage({
   if (!session) redirect('/signin');
 
   const { id, matiereId } = await params;
+  const userId = session.user!.id!;
 
-  const matiere = await prisma.matiere.findFirst({
-    where: { id: matiereId, classeur: { id, userId: session.user!.id! } },
-    include: {
-      classeur: { include: { anneeScolaire: true, niveau: true } },
-      discipline: {
-        include: {
-          domaines: {
-            where: { matiereId: null },
-            orderBy: { label: 'asc' },
-          },
-        },
-      },
-      domaines: { orderBy: { label: 'asc' } },
-      sequences: {
-        orderBy: { ordre: 'asc' },
-        include: {
-          _count: { select: { fiches: true } },
-          periode: { select: { id: true, label: true } },
-          disciplines: { select: { id: true } },
-          domaines: { select: { id: true } },
-          sousDomaines: { select: { id: true } },
-        },
-      },
-    },
-  });
+  const [classeur, matiere] = await Promise.all([
+    classeurSvc.getById(id, userId).catch(() => null),
+    matiereSvc.getById(matiereId, userId).catch(() => null),
+  ]);
 
-  if (!matiere) notFound();
+  if (!classeur || !matiere) notFound();
 
-  const periodes = await prisma.periode.findMany({
-    where: { anneeScolaireId: matiere.classeur.anneeScolaireId },
-    orderBy: { dateDebut: 'asc' },
-  });
-
-  const initialSequences = matiere.sequences.map((s) => ({
-    id: s.id,
-    titre: s.titre,
-    ordre: s.ordre,
-    matiereId: s.matiereId,
-    periodeId: s.periodeId,
-    periodeLabel: s.periode?.label ?? null,
-    objectifs: s.objectifs,
-    niveauId: (s as unknown as { niveauId: string | null }).niveauId ?? null,
-    disciplineIds: s.disciplines.map((d) => d.id),
-    domaineIds: s.domaines.map((d) => d.id),
-    sousDomainIds: s.sousDomaines.map((d) => d.id),
-    _count: { fiches: s._count.fiches },
-    createdAt: s.createdAt,
-    updatedAt: s.updatedAt,
-  })) as unknown as RouterOutputs['sequence']['list'];
-
-  const allDomaines = [
-    ...(matiere.discipline?.domaines ?? []),
-    ...matiere.domaines,
-  ];
+  const [sequences, periodes, allDomaines] = await Promise.all([
+    sequenceSvc.list(matiereId, userId),
+    referenceSvc.listPeriodes(classeur.anneeScolaireId),
+    matiere.disciplineId
+      ? referenceSvc.listDomainesForMatiere(matiere.disciplineId, matiereId)
+      : Promise.resolve([]),
+  ]);
 
   return (
     <main className="p-6">
       <Breadcrumb
         items={[
           { label: 'Mes classeurs', href: '/classeurs' },
-          { label: matiere.classeur.titre, href: `/classeurs/${id}` },
+          { label: classeur.titre, href: `/classeurs/${id}` },
           { label: matiere.titre },
         ]}
       />
@@ -93,19 +53,19 @@ export default async function MatierePage({
           classeurId={id}
           matiereId={matiereId}
           disciplineId={matiere.disciplineId!}
-          anneeScolaireId={matiere.classeur.anneeScolaireId}
+          anneeScolaireId={classeur.anneeScolaireId}
           domaines={allDomaines}
-          initialSequences={initialSequences}
+          initialSequences={sequences}
           initialPeriodes={periodes}
-          initialPeriodesVisibles={matiere.periodesVisibles as string[]}
+          initialPeriodesVisibles={matiere.periodesVisibles}
           initialDomaineIdsVisibles={matiere.domaineIdsVisibles}
         />
       ) : (
         <SequenceList
           classeurId={id}
           matiereId={matiereId}
-          initialSequences={initialSequences}
-          anneeScolaireId={matiere.classeur.anneeScolaireId}
+          initialSequences={sequences}
+          anneeScolaireId={classeur.anneeScolaireId}
         />
       )}
     </main>

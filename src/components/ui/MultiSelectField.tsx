@@ -25,6 +25,7 @@ export function MultiSelectField({
 }: MultiSelectFieldProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const safeIds = selectedIds ?? [];
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -35,14 +36,14 @@ export function MultiSelectField({
   }, []);
 
   const toggle = (id: string) => {
-    if (selectedIds.includes(id)) {
-      onChange(selectedIds.filter((v) => v !== id));
+    if (safeIds.includes(id)) {
+      onChange(safeIds.filter((v) => v !== id));
     } else {
-      onChange([...selectedIds, id]);
+      onChange([...safeIds, id]);
     }
   };
 
-  const selectedLabels = options.filter((o) => selectedIds.includes(o.value));
+  const selectedLabels = options.filter((o) => safeIds.includes(o.value));
 
   return (
     <div className="mb-4" ref={ref}>
@@ -73,7 +74,7 @@ export function MultiSelectField({
                 >
                   <input
                     type="checkbox"
-                    checked={selectedIds.includes(o.value)}
+                    checked={safeIds.includes(o.value)}
                     onChange={() => toggle(o.value)}
                     className="h-4 w-4 rounded border-gray-300 text-blue-600"
                   />

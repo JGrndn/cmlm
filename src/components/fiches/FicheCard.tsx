@@ -5,6 +5,7 @@ import { trpc } from '@/lib/trpc/client';
 import { Plus, Trash2, Clock, ChevronDown, ChevronUp, X } from 'lucide-react';
 import { PhaseEditor } from '@/components/phases/PhaseEditor';
 import { MultiSelectField } from '@/components/ui/MultiSelectField';
+import { FichiersSection } from '@/components/fiches/FichiersSection';
 
 interface Phase {
   id: string;
@@ -62,13 +63,13 @@ export function FicheCard({ fiche, disciplineOptions, domaineOptions, sousDomain
   function addMateriel() {
     const val = newMateriel.trim();
     if (!val) return;
-    const next = [...fiche.materiels, val];
+    const next = [...(fiche.materiels ?? []), val];
     updateFiche.mutate({ id: fiche.id, materiels: next });
     setNewMateriel('');
   }
 
   function removeMateriel(index: number) {
-    const next = fiche.materiels.filter((_, i) => i !== index);
+    const next = (fiche.materiels ?? []).filter((_, i) => i !== index);
     updateFiche.mutate({ id: fiche.id, materiels: next });
   }
 
@@ -138,7 +139,7 @@ export function FicheCard({ fiche, disciplineOptions, domaineOptions, sousDomain
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">Matériel</label>
             <div className="space-y-1.5 mb-2">
-              {fiche.materiels.map((m, i) => (
+              {(fiche.materiels ?? []).map((m, i) => (
                 <div key={i} className="flex items-center gap-2 text-sm text-gray-700">
                   <span className="flex-1">{m}</span>
                   <button onClick={() => removeMateriel(i)} className="p-0.5 text-gray-400 hover:text-red-500">
@@ -183,6 +184,8 @@ export function FicheCard({ fiche, disciplineOptions, domaineOptions, sousDomain
               <Plus className="h-3.5 w-3.5" /> Ajouter une phase
             </button>
           </div>
+
+          <FichiersSection ficheId={fiche.id} />
         </div>
       )}
     </div>

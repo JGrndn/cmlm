@@ -1,27 +1,21 @@
 import { z } from 'zod';
-import { TRPCError } from '@trpc/server';
-import { createTRPCRouter, protectedProcedure } from '@/server/trpc';
+import { createTRPCRouter, protectedProcedure, mapDomainError } from '@/server/trpc';
+import { referenceService } from '@/server/services';
 
 export const referenceRouter = createTRPCRouter({
-  listNiveaux: protectedProcedure.query(async ({ ctx }) => {
-    return ctx.prisma.niveauScolaire.findMany({
-      orderBy: { ordre: 'asc' },
-      include: { cycle: true },
-    });
-  }),
+  listNiveaux: protectedProcedure.query(({ ctx }) =>
+    referenceService(ctx.prisma).listNiveaux(),
+  ),
 
-  listAnnees: protectedProcedure.query(async ({ ctx }) => {
-    return ctx.prisma.anneeScolaire.findMany({ orderBy: { debut: 'asc' } });
-  }),
+  listAnnees: protectedProcedure.query(({ ctx }) =>
+    referenceService(ctx.prisma).listAnneesScolaires(),
+  ),
 
   listPeriodes: protectedProcedure
     .input(z.object({ anneeScolaireId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      return ctx.prisma.periode.findMany({
-        where: { anneeScolaireId: input.anneeScolaireId },
-        orderBy: { dateDebut: 'asc' },
-      });
-    }),
+    .query(({ ctx, input }) =>
+      referenceService(ctx.prisma).listPeriodes(input.anneeScolaireId),
+    ),
 
   createAnneeScolaire: protectedProcedure
     .input(
@@ -40,99 +34,49 @@ export const referenceRouter = createTRPCRouter({
           .min(1),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
-      return ctx.prisma.$transaction(async (tx) => {
-        const annee = await tx.anneeScolaire.create({
-          data: { label: input.label, debut: input.debut, fin: input.fin },
-        });
-        await tx.periode.createMany({
-          data: input.periodes.map((p) => ({
-            label: p.label,
-            dateDebut: new Date(p.dateDebut),
-            dateFin: new Date(p.dateFin),
-            anneeScolaireId: annee.id,
-          })),
-        });
-        return annee;
-      });
-    }),
+    .mutation(({ ctx, input }) =>
+      referenceService(ctx.prisma).createAnneeScolaire(input),
+    ),
 
   listDisciplines: protectedProcedure
     .input(z.object({ cycleId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      return ctx.prisma.discipline.findMany({
-        where: { cycleId: input.cycleId },
-        include: { domaines: { include: { sousDomaines: true } } },
-        orderBy: { label: 'asc' },
-      });
-    }),
+    .query(({ ctx, input }) =>
+      referenceService(ctx.prisma).listDisciplines(input.cycleId),
+    ),
 
   createDomaine: protectedProcedure
     .input(z.object({ disciplineId: z.string(), label: z.string().min(1), matiereId: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      return ctx.prisma.domaine.create({
-        data: { disciplineId: input.disciplineId, label: input.label, matiereId: input.matiereId },
-      });
-    }),
+    .mutation(({ ctx, input }) =>
+      referenceService(ctx.prisma).createDomaine(input),
+    ),
 
   deleteDomaine: protectedProcedure
     .input(z.object({ id: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      const d = await ctx.prisma.domaine.findFirst({
-        where: {
-          id: input.id,
-          matiereId: { not: null },
-          matiere: { classeur: { userId: ctx.session.user.id } },
-        },
-      });
-      if (!d) throw new TRPCError({ code: 'NOT_FOUND' });
-      return ctx.prisma.domaine.delete({ where: { id: input.id } });
-    }),
+    .mutation(({ ctx, input }) =>
+      referenceService(ctx.prisma).deleteDomaine(input.id, ctx.session.user.id).catch(mapDomainError),
+    ),
 
   listSousDomaines: protectedProcedure
     .input(z.object({ domaineId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      return ctx.prisma.sousDomaine.findMany({
-        where: {
-          domaineId: input.domaineId,
-          OR: [
-            { matiereId: null },
-            { matiere: { classeur: { userId: ctx.session.user.id } } },
-          ],
-        },
-        orderBy: { label: 'asc' },
-      });
-    }),
+    .query(({ ctx, input }) =>
+      referenceService(ctx.prisma).listSousDomaines(input.domaineId, ctx.session.user.id),
+    ),
 
   createSousDomaine: protectedProcedure
     .input(z.object({ domaineId: z.string(), label: z.string().min(1), matiereId: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      return ctx.prisma.sousDomaine.create({
-        data: { domaineId: input.domaineId, label: input.label, matiereId: input.matiereId },
-      });
-    }),
+    .mutation(({ ctx, input }) =>
+      referenceService(ctx.prisma).createSousDomaine(input),
+    ),
 
   listObjectifs: protectedProcedure
     .input(z.object({ sousDomainIds: z.array(z.string()) }))
-    .query(async ({ ctx, input }) => {
-      return ctx.prisma.objectif.findMany({
-        where: { sousDomainId: { in: input.sousDomainIds } },
-        orderBy: { label: 'asc' },
-        select: { id: true, label: true, sousDomainId: true },
-      });
-    }),
+    .query(({ ctx, input }) =>
+      referenceService(ctx.prisma).listObjectifs(input.sousDomainIds),
+    ),
 
   deleteSousDomaine: protectedProcedure
     .input(z.object({ id: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      const sd = await ctx.prisma.sousDomaine.findFirst({
-        where: {
-          id: input.id,
-          matiereId: { not: null },
-          matiere: { classeur: { userId: ctx.session.user.id } },
-        },
-      });
-      if (!sd) throw new TRPCError({ code: 'NOT_FOUND' });
-      return ctx.prisma.sousDomaine.delete({ where: { id: input.id } });
-    }),
+    .mutation(({ ctx, input }) =>
+      referenceService(ctx.prisma).deleteSousDomaine(input.id, ctx.session.user.id).catch(mapDomainError),
+    ),
 });
