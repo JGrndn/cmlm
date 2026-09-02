@@ -7,20 +7,6 @@ datasource db {
   provider = "postgresql"
 }
 
-model User {
-  id        String     @id @default(cuid())
-  email     String     @unique
-  name      String?
-  password  String?
-  role      Role       @default(VIEWER)
-  isActive  Boolean    @default(true)
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  classeurs Classeur[]
-
-  @@map("users")
-}
-
 model Cycle {
   id          String           @id @default(cuid())
   code        String           @unique
@@ -119,7 +105,6 @@ model Classeur {
   updatedAt          DateTime       @updatedAt
   anneeScolaire      AnneeScolaire  @relation(fields: [anneeScolaireId], references: [id])
   niveau             NiveauScolaire @relation(fields: [niveauId], references: [id])
-  user               User           @relation(fields: [userId], references: [id])
   matieres           Matiere[]
   fichesSansSequence Fiche[]
 
@@ -222,11 +207,4 @@ model Objectif {
   sequences    Sequence[]
 
   @@map("objectifs")
-}
-
-enum Role {
-  ADMIN
-  MANAGER
-  CONTRIBUTOR
-  VIEWER
 }
